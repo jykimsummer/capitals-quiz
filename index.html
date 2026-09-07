@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>세계 수도 퀴즈</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===== 1. 시작 화면 ===== -->
+  <section id="view-start">
+    <div class="eyebrow">세계 수도송 1탄</div>
+    <h1>세계 수도 퀴즈</h1>
+    <p class="lede">36개 나라의 수도를 고릅니다. 모든 문항에 답해야 결과가 나오고, 주차별 점수가 학번으로 누적됩니다.</p>
+
+    <form id="start-form" class="card stack" style="margin-top:22px" novalidate>
+      <div class="grid-2">
+        <div class="field">
+          <label for="section">분반</label>
+          <input id="section" name="section" placeholder="예: 01" required autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="week">주차</label>
+          <select id="week" name="week" required>
+            <option value="">선택</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="student_id">학번</label>
+          <input id="student_id" name="student_id" placeholder="예: 2026123" required inputmode="numeric" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="name">이름</label>
+          <input id="name" name="name" placeholder="홍길동" required autocomplete="off">
+        </div>
+      </div>
+      <p class="err" id="start-err" hidden></p>
+      <div class="toolbar">
+        <button class="btn" type="submit">퀴즈 시작</button>
+        <span class="hint">학번과 이름은 이전 주차 기록을 찾는 데 쓰입니다. 매주 같은 학번을 입력하세요.</span>
+      </div>
+    </form>
+  </section>
+
+  <!-- ===== 2. 퀴즈 화면 ===== -->
+  <section id="view-quiz" hidden>
+    <div class="progress">
+      <div class="row">
+        <span id="quiz-who"></span>
+        <span><span class="num" id="answered">0</span> / <span class="num" id="total-n">36</span></span>
+      </div>
+      <div class="bar"><i id="bar"></i></div>
+    </div>
+    <form id="quiz-form" novalidate>
+      <div id="quiz-body"></div>
+      <p class="err" id="quiz-err" hidden></p>
+      <div class="toolbar" style="margin-top:20px">
+        <button class="btn" type="submit" id="submit-btn">제출하고 채점</button>
+        <span class="hint">모든 문항이 필수입니다. 빠진 문항은 빨간 테두리로 표시됩니다.</span>
+      </div>
+    </form>
+  </section>
+
+  <!-- ===== 3. 결과 화면 ===== -->
+  <section id="view-result" hidden>
+    <div class="eyebrow" id="res-eyebrow"></div>
+    <div class="score-hero">
+      <div class="big"><span id="res-score"></span><small id="res-total"></small></div>
+      <div class="who" id="res-who"></div>
+    </div>
+
+    <div class="section-title">
+      <h2>이번에 틀린 문항</h2>
+      <span class="pill bad" id="res-wrong-count"></span>
+    </div>
+    <ul class="wrong-list" id="res-wrong"></ul>
+    <div class="all-correct" id="res-perfect" hidden>모든 문항을 맞혔습니다.</div>
+
+    <div class="section-title">
+      <h2>주차별 누적 기록</h2>
+      <span class="hint" id="hist-hint"></span>
+    </div>
+    <div class="timeline" id="timeline"></div>
+    <div id="hist-list" class="stack"></div>
+
+    <div class="toolbar" style="margin-top:30px">
+      <button class="btn ghost" type="button" id="btn-home">처음으로</button>
+    </div>
+  </section>
+
+  <footer>세계 수도 퀴즈 · 정화예술대학교 교양학부</footer>
+</div>
+
+<script src="config.js"></script>
+<script src="quiz-data.js"></script>
+<script src="api.js"></script>
+<script>
+(function () {
+  const ITEMS = window.QUIZ_ITEMS;
+  const TOTAL = ITEMS.length;
+  const $ = (id) => document.getElementById(id);
+  const views = { start: $("view-start"), quiz: $("view-quiz"), result: $("view-result") };
+  function show(name) {
+    Object.keys(views).forEach((k) => (views[k].hidden = k !== name));
+    window.scrollTo({ top: 0 });
+  }
+  const josa = (w) => { const c = w.charCodeAt(w.length - 1); return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 ? "은" : "는"; };
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  // 주차 선택지 1~15
+  const weekSel = $("week");
+  for (let w = 1; w <= 15; w++) {
+    const o = document.createElement("option");
+    o.value = w; o.textContent = w + "주차";
+    weekSel.appendChild(o);
+  }
+  $("total-n").textContent = TOTAL;
+
+  let student = null; // {section, student_id, name, week}
+
+  // ---------- 시작 ----------
+  $("start-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const f = e.target;
+    const s = {
+      section: f.section.value.trim(),
+      student_id: f.student_id.value.trim(),
+      name: f.name.value.trim(),
+      week: parseInt(f.week.value, 10),
+    };
+    const err = $("start-err");
+    if (!s.section || !s.student_id || !s.name || !s.week) {
+      err.textContent = "분반, 주차, 학번, 이름을 모두 입력하세요.";
+      err.hidden = false;
+      return;
+    }
+    err.hidden = true;
+    student = s;
+    buildQuiz();
+    $("quiz-who").textContent = `${s.section}분반 · ${s.name} · ${s.week}주차`;
+    show("quiz");
+  });
+
+  // ---------- 퀴즈 ----------
+  function shuffle(a) {
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  function buildQuiz() {
+    const body = $("quiz-body");
+    body.innerHTML = "";
+    let lastC = null;
+    ITEMS.forEach((it, i) => {
+      if (it.c !== lastC) {
+        const h = document.createElement("div");
+        h.className = "continent";
+        h.innerHTML = `<span class="eyebrow" style="margin:0">${esc(it.c)}</span>`;
+        body.appendChild(h);
+        lastC = it.c;
+      }
+      const choices = shuffle([it.answer, ...it.wrong]);
+      const q = document.createElement("div");
+      q.className = "q";
+      q.id = "q-" + i;
+      q.innerHTML =
+        `<div class="country">${esc(it.country)}<small>( &nbsp;&nbsp;&nbsp;&nbsp; )</small></div>` +
+        `<div class="choices">` +
+        choices.map((c) =>
+          `<label class="choice"><input type="radio" name="q${i}" value="${esc(c)}" required><span>${esc(c)}</span></label>`
+        ).join("") +
+        `</div>`;
+      body.appendChild(q);
+    });
+    updateProgress();
+  }
+  function answeredCount() {
+    let n = 0;
+    for (let i = 0; i < TOTAL; i++) if (document.querySelector(`input[name=q${i}]:checked`)) n++;
+    return n;
+  }
+  function updateProgress() {
+    const n = answeredCount();
+    $("answered").textContent = n;
+    $("bar").style.width = (n / TOTAL) * 100 + "%";
+  }
+  $("quiz-body").addEventListener("change", (e) => {
+    if (e.target.type === "radio") {
+      e.target.closest(".q").classList.remove("missing");
+      updateProgress();
+    }
+  });
+
+  $("quiz-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const err = $("quiz-err");
+    const answers = {};
+    let firstMissing = null;
+    ITEMS.forEach((it, i) => {
+      const sel = document.querySelector(`input[name=q${i}]:checked`);
+      const box = $("q-" + i);
+      if (!sel) {
+        box.classList.add("missing");
+        if (!firstMissing) firstMissing = box;
+      } else {
+        answers[it.country] = sel.value;
+      }
+    });
+    if (firstMissing) {
+      const missing = TOTAL - answeredCount();
+      err.textContent = `아직 ${missing}문항이 남았습니다. 빨간 문항을 확인하세요.`;
+      err.hidden = false;
+      firstMissing.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    err.hidden = true;
+
+    const wrong = [];
+    ITEMS.forEach((it) => {
+      if (answers[it.country] !== it.answer) wrong.push({ country: it.country, answer: it.answer, chosen: answers[it.country] });
+    });
+    const attempt = Object.assign({}, student, { score: TOTAL - wrong.length, total: TOTAL, wrong, answers });
+
+    const btn = $("submit-btn");
+    btn.disabled = true; btn.textContent = "저장 중…";
+    let history = [];
+    let saveErr = null;
+    try {
+      await window.QuizAPI.saveAttempt(attempt);
+      history = await window.QuizAPI.getHistory(student.student_id, student.name);
+    } catch (ex) {
+      saveErr = ex;
+      console.error(ex);
+    }
+    btn.disabled = false; btn.textContent = "제출하고 채점";
+    renderResult(attempt, history, saveErr);
+    show("result");
+  });
+
+  // ---------- 결과 ----------
+  function latestPerWeek(history) {
+    const map = new Map();
+    history.forEach((h) => map.set(h.week, h)); // history는 week, created_at 오름차순 → 마지막이 최신
+    return [...map.values()].sort((a, b) => a.week - b.week);
+  }
+  function renderResult(attempt, history, saveErr) {
+    const s = attempt;
+    $("res-eyebrow").textContent = `${s.week}주차 결과`;
+    $("res-score").textContent = s.score;
+    $("res-total").textContent = ` / ${s.total}점`;
+    $("res-who").textContent = `${s.section}분반 · ${s.student_id} · ${s.name}`;
+
+    const ul = $("res-wrong");
+    ul.innerHTML = "";
+    $("res-wrong-count").textContent = `${s.wrong.length}문항`;
+    $("res-perfect").hidden = s.wrong.length !== 0;
+    s.wrong.forEach((w) => {
+      const li = document.createElement("li");
+      li.innerHTML = `<span><b>${esc(w.country)}</b>${josa(w.country)} <b>${esc(w.answer)}</b></span><span class="chosen">선택: ${esc(w.chosen)}</span>`;
+      ul.appendChild(li);
+    });
+
+    // 누적
+    const tl = $("timeline");
+    const list = $("hist-list");
+    tl.innerHTML = ""; list.innerHTML = "";
+    const hint = $("hist-hint");
+    if (saveErr) {
+      hint.textContent = "저장에 실패해 이번 점수는 기록되지 않았습니다. 교수자에게 화면을 보여주세요.";
+      hint.className = "err";
+      history = [Object.assign({ created_at: new Date().toISOString() }, attempt)];
+    } else {
+      hint.className = "hint";
+      hint.textContent = window.QuizAPI.mode === "local" ? "(테스트 모드: 이 브라우저에만 저장됨)" : "";
+    }
+    const weeks = latestPerWeek(history);
+    weeks.forEach((h, i) => {
+      if (i > 0) {
+        const prev = weeks[i - 1];
+        const d = h.score - prev.score;
+        const cls = d > 0 ? "up" : d < 0 ? "down" : "same";
+        const txt = d > 0 ? `+${d}` : d < 0 ? `${d}` : "±0";
+        const ar = document.createElement("div");
+        ar.className = "tl-arrow";
+        ar.innerHTML = `→<div class="delta ${cls}">${txt}</div>`;
+        tl.appendChild(ar);
+      }
+      const it = document.createElement("div");
+      it.className = "tl-item" + (h.week === s.week ? " now" : "");
+      it.innerHTML = `<div class="wk">${h.week}주차</div><div class="sc">${h.score}<span style="font-size:.9rem;color:var(--muted)">/${h.total}</span></div>`;
+      tl.appendChild(it);
+    });
+
+    // 주차별 틀린 문항 (모든 시도 표시)
+    history.forEach((h) => {
+      const d = document.createElement("details");
+      d.className = "hist";
+      d.open = h.week === s.week;
+      const when = new Date(h.created_at).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" });
+      const wrongs = Array.isArray(h.wrong) ? h.wrong : [];
+      d.innerHTML =
+        `<summary><span>${h.week}주차 <span class="hint">${when}</span></span>` +
+        `<span class="sc">${h.score} / ${h.total} <span class="pill ${wrongs.length ? "bad" : "ok"}">틀림 ${wrongs.length}</span></span></summary>` +
+        `<div class="body">` +
+        (wrongs.length
+          ? `<ul>${wrongs.map((w) => `<li><b>${esc(w.country)}</b>${josa(w.country)} ${esc(w.answer)} <span class="hint">(선택: ${esc(w.chosen)})</span></li>`).join("")}</ul>`
+          : `<p class="hint" style="margin:10px 0 0">틀린 문항 없음</p>`) +
+        `</div>`;
+      list.appendChild(d);
+    });
+  }
+
+  $("btn-home").addEventListener("click", () => {
+    $("start-form").reset();
+    show("start");
+  });
+})();
+</script>
+</body>
+</html>

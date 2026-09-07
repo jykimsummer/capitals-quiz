@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>세계 수도 퀴즈 · 교수자</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .wrap { max-width: 1080px; }
+  .kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .kpi div { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .kpi .l { font-size: .8rem; color: var(--muted); letter-spacing: .04em; }
+  .kpi .v { font-family: var(--font-display); font-size: 1.7rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .tbl td.cell { text-align: right; }
+  .tbl td.cell.low { color: var(--stamp); font-weight: 700; }
+  .tbl td.cell.top { color: var(--sea); font-weight: 700; }
+  .tbl td.cell .n { font-size: .75rem; color: var(--muted); margin-left: 3px; }
+  .miss { color: var(--line); }
+  .detail-row td { background: var(--paper); white-space: normal; font-size: .86rem; }
+  .detail-row .wk { display: inline-block; font-weight: 700; margin-right: 6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">교수자용</div>
+  <h1>세계 수도 퀴즈 결과</h1>
+
+  <form id="login" class="card" style="margin-top:20px;max-width:420px">
+    <div class="field">
+      <label for="pw">비밀번호</label>
+      <input id="pw" type="password" required autocomplete="current-password">
+    </div>
+    <p class="err" id="login-err" hidden></p>
+    <div class="toolbar" style="margin-top:14px"><button class="btn" type="submit">조회</button></div>
+  </form>
+
+  <div id="dash" hidden>
+    <div class="toolbar" style="margin:18px 0 16px">
+      <div class="field" style="min-width:160px">
+        <label for="f-section">분반</label>
+        <select id="f-section"><option value="">전체</option></select>
+      </div>
+      <div class="field" style="flex:1;min-width:200px">
+        <label for="f-q">학번·이름 검색</label>
+        <input id="f-q" placeholder="검색">
+      </div>
+      <div class="field"><label>&nbsp;</label>
+        <div class="toolbar">
+          <button class="btn ghost" type="button" id="btn-csv-pivot">주차별 점수표 CSV</button>
+          <button class="btn ghost" type="button" id="btn-csv-raw">전체 응답 CSV</button>
+          <button class="btn ghost" type="button" id="btn-reload">새로고침</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi" id="kpi"></div>
+
+    <div class="section-title"><h2>학생별 주차별 점수</h2><span class="hint">같은 주차를 여러 번 풀면 마지막 점수 기준 · 행을 누르면 틀린 문항</span></div>
+    <div class="tbl-wrap"><table class="tbl" id="pivot"></table></div>
+  </div>
+
+  <footer><a href="index.html" style="color:inherit">학생용 화면으로</a></footer>
+</div>
+
+<script src="config.js"></script>
+<script src="quiz-data.js"></script>
+<script src="api.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const josa = (w) => { const c = w.charCodeAt(w.length - 1); return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 ? "은" : "는"; };
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  let rows = [];
+  let password = "";
+
+  $("login").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    password = $("pw").value;
+    await load();
+  });
+  $("btn-reload").addEventListener("click", load);
+
+  async function load() {
+    const err = $("login-err");
+    try {
+      rows = await window.QuizAPI.adminAttempts(password);
+      err.hidden = true;
+      $("login").hidden = true;
+      $("dash").hidden = false;
+      fillSections();
+      render();
+    } catch (ex) {
+      err.textContent = /password|28000|P0001/i.test(ex.message) ? "비밀번호가 맞지 않습니다." : "불러오기 실패: " + ex.message;
+      err.hidden = false;
+    }
+  }
+
+  function fillSections() {
+    const sel = $("f-section");
+    const cur = sel.value;
+    const secs = [...new Set(rows.map((r) => r.section))].sort();
+    sel.innerHTML = `<option value="">전체</option>` + secs.map((s) => `<option value="${esc(s)}">${esc(s)}분반</option>`).join("");
+    sel.value = cur;
+  }
+  $("f-section").addEventListener("change", render);
+  $("f-q").addEventListener("input", render);
+
+  function filtered() {
+    const sec = $("f-section").value;
+    const q = $("f-q").value.trim().toLowerCase();
+    return rows.filter((r) => (!sec || r.section === sec) && (!q || (r.student_id + r.name).toLowerCase().includes(q)));
+  }
+
+  // 학생 × 주차 피벗 (마지막 시도 기준)
+  function pivot(data) {
+    const weeks = [...new Set(data.map((r) => r.week))].sort((a, b) => a - b);
+    const students = new Map();
+    data.forEach((r) => {
+      const key = r.section + "|" + r.student_id;
+      if (!students.has(key)) students.set(key, { section: r.section, student_id: r.student_id, name: r.name, byWeek: {}, tries: {} });
+      const st = students.get(key);
+      st.name = r.name;
+      st.byWeek[r.week] = r;                        // 정렬 순서상 마지막 = 최신
+      st.tries[r.week] = (st.tries[r.week] || 0) + 1;
+    });
+    const list = [...students.values()].sort((a, b) => a.section.localeCompare(b.section) || a.student_id.localeCompare(b.student_id));
+    return { weeks, list };
+  }
+
+  function render() {
+    const data = filtered();
+    const { weeks, list } = pivot(data);
+    const total = (data[0] && data[0].total) || window.QUIZ_ITEMS.length;
+
+    // KPI
+    const latestScores = list.map((s) => { const w = Math.max(...Object.keys(s.byWeek).map(Number)); return s.byWeek[w].score; });
+    const avg = latestScores.length ? (latestScores.reduce((a, b) => a + b, 0) / latestScores.length).toFixed(1) : "–";
+    const perfect = latestScores.filter((x) => x === total).length;
+    $("kpi").innerHTML =
+      `<div><div class="l">학생 수</div><div class="v">${list.length}</div></div>` +
+      `<div><div class="l">응답 수</div><div class="v">${data.length}</div></div>` +
+      `<div><div class="l">최근 주차 평균</div><div class="v">${avg}<span class="hint"> / ${total}</span></div></div>` +
+      `<div><div class="l">최근 주차 만점</div><div class="v">${perfect}</div></div>`;
+
+    // 표
+    const t = $("pivot");
+    let html = `<thead><tr><th>분반</th><th>학번</th><th>이름</th>` +
+      weeks.map((w) => `<th class="num">${w}주차</th>`).join("") + `<th class="num">변화</th></tr></thead><tbody>`;
+    list.forEach((s, idx) => {
+      const ws = Object.keys(s.byWeek).map(Number).sort((a, b) => a - b);
+      const first = s.byWeek[ws[0]].score, last = s.byWeek[ws[ws.length - 1]].score;
+      const d = ws.length > 1 ? last - first : null;
+      html += `<tr class="stu" data-i="${idx}"><td>${esc(s.section)}</td><td>${esc(s.student_id)}</td><td>${esc(s.name)}</td>`;
+      weeks.forEach((w) => {
+        const r = s.byWeek[w];
+        if (!r) { html += `<td class="cell miss">–</td>`; return; }
+        const cls = r.score === total ? "top" : r.score < total * 0.6 ? "low" : "";
+        html += `<td class="cell ${cls}">${r.score}${s.tries[w] > 1 ? `<span class="n">×${s.tries[w]}</span>` : ""}</td>`;
+      });
+      html += `<td class="num ${d > 0 ? "delta up" : d < 0 ? "delta down" : ""}">${d === null ? "" : d > 0 ? "+" + d : d}</td></tr>`;
+      // 상세 행
+      html += `<tr class="detail-row" hidden><td colspan="${4 + weeks.length}">` +
+        ws.map((w) => {
+          const wr = s.byWeek[w].wrong || [];
+          return `<div><span class="wk">${w}주차</span>${wr.length ? wr.map((x) => `${esc(x.country)}→${esc(x.answer)}<span class="hint">(${esc(x.chosen)})</span>`).join(", ") : "<span class='hint'>틀린 문항 없음</span>"}</div>`;
+        }).join("") + `</td></tr>`;
+    });
+    html += `</tbody>`;
+    t.innerHTML = html;
+    t._list = list; t._weeks = weeks;
+  }
+  $("pivot").addEventListener("click", (e) => {
+    const tr = e.target.closest("tr.stu");
+    if (!tr) return;
+    const d = tr.nextElementSibling;
+    d.hidden = !d.hidden;
+  });
+
+  // CSV
+  function csv(rowsArr) {
+    const q = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    return "﻿" + rowsArr.map((r) => r.map(q).join(",")).join("\r\n");
+  }
+  function download(name, text) {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([text], { type: "text/csv;charset=utf-8" }));
+    a.download = name; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+  $("btn-csv-pivot").addEventListener("click", () => {
+    const { weeks, list } = pivot(filtered());
+    const out = [["분반", "학번", "이름", ...weeks.map((w) => w + "주차"), ...weeks.map((w) => w + "주차 틀린문항")]];
+    list.forEach((s) => out.push([
+      s.section, s.student_id, s.name,
+      ...weeks.map((w) => (s.byWeek[w] ? s.byWeek[w].score : "")),
+      ...weeks.map((w) => (s.byWeek[w] ? (s.byWeek[w].wrong || []).map((x) => x.country).join(" ") : "")),
+    ]));
+    download("수도퀴즈_주차별점수.csv", csv(out));
+  });
+  $("btn-csv-raw").addEventListener("click", () => {
+    const out = [["분반", "학번", "이름", "주차", "점수", "만점", "틀린문항", "제출시각"]];
+    filtered().forEach((r) => out.push([
+      r.section, r.student_id, r.name, r.week, r.score, r.total,
+      (r.wrong || []).map((x) => `${x.country}(${x.chosen}→${x.answer})`).join(" "),
+      new Date(r.created_at).toLocaleString("ko-KR"),
+    ]));
+    download("수도퀴즈_전체응답.csv", csv(out));
+  });
+})();
+</script>
+</body>
+</html>

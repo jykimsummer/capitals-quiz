@@ -1,0 +1,43 @@
+// 세계 수도송 1탄 순서 그대로. 대륙 구분은 화면 소제목으로만 쓰인다.
+window.QUIZ_ITEMS = [
+  { c: "아시아", country: "한국", answer: "서울", wrong: ["부산", "인천"] },
+  { c: "아시아", country: "일본", answer: "도쿄", wrong: ["오사카", "교토"] },
+  { c: "아시아", country: "싱가포르", answer: "싱가포르", wrong: ["쿠알라룸푸르", "자카르타"] },
+  { c: "아시아", country: "중국", answer: "베이징", wrong: ["상하이", "홍콩"] },
+  { c: "아시아", country: "태국", answer: "방콕", wrong: ["푸껫", "치앙마이"] },
+  { c: "아시아", country: "네팔", answer: "카트만두", wrong: ["포카라", "라싸"] },
+  { c: "아시아", country: "인도", answer: "뉴델리", wrong: ["뭄바이", "콜카타"] },
+  { c: "아시아", country: "미얀마", answer: "네피도", wrong: ["양곤", "만달레이"] },
+  { c: "아시아", country: "베트남", answer: "하노이", wrong: ["호찌민", "다낭"] },
+  { c: "아시아", country: "필리핀", answer: "마닐라", wrong: ["세부", "다바오"] },
+
+  { c: "유럽", country: "프랑스", answer: "파리", wrong: ["마르세유", "리옹"] },
+  { c: "유럽", country: "독일", answer: "베를린", wrong: ["뮌헨", "프랑크푸르트"] },
+  { c: "유럽", country: "이탈리아", answer: "로마", wrong: ["밀라노", "베네치아"] },
+  { c: "유럽", country: "스위스", answer: "베른", wrong: ["취리히", "제네바"] },
+  { c: "유럽", country: "영국", answer: "런던", wrong: ["맨체스터", "에든버러"] },
+  { c: "유럽", country: "스페인", answer: "마드리드", wrong: ["바르셀로나", "세비야"] },
+  { c: "유럽", country: "그리스", answer: "아테네", wrong: ["테살로니키", "크레타"] },
+  { c: "유럽", country: "체코", answer: "프라하", wrong: ["브르노", "브라티슬라바"] },
+  { c: "유럽", country: "네덜란드", answer: "암스테르담", wrong: ["로테르담", "헤이그"] },
+  { c: "유럽", country: "러시아", answer: "모스크바", wrong: ["상트페테르부르크", "블라디보스토크"] },
+
+  { c: "아메리카", country: "캐나다", answer: "오타와", wrong: ["토론토", "밴쿠버"] },
+  { c: "아메리카", country: "쿠바", answer: "아바나", wrong: ["산티아고데쿠바", "킹스턴"] },
+  { c: "아메리카", country: "미국", answer: "워싱턴DC", wrong: ["뉴욕", "로스앤젤레스"] },
+  { c: "아메리카", country: "멕시코", answer: "멕시코시티", wrong: ["과달라하라", "칸쿤"] },
+  { c: "아메리카", country: "브라질", answer: "브라질리아", wrong: ["리우데자네이루", "상파울루"] },
+  { c: "아메리카", country: "칠레", answer: "산티아고", wrong: ["발파라이소", "부에노스아이레스"] },
+  { c: "아메리카", country: "우루과이", answer: "몬테비데오", wrong: ["부에노스아이레스", "아순시온"] },
+  { c: "아메리카", country: "페루", answer: "리마", wrong: ["쿠스코", "키토"] },
+
+  { c: "오세아니아", country: "호주", answer: "캔버라", wrong: ["시드니", "멜버른"] },
+  { c: "오세아니아", country: "뉴질랜드", answer: "웰링턴", wrong: ["오클랜드", "크라이스트처치"] },
+
+  { c: "아프리카", country: "우간다", answer: "캄팔라", wrong: ["엔테베", "키갈리"] },
+  { c: "아프리카", country: "가나", answer: "아크라", wrong: ["쿠마시", "라고스"] },
+  { c: "아프리카", country: "세네갈", answer: "다카르", wrong: ["바마코", "아비장"] },
+  { c: "아프리카", country: "모로코", answer: "라바트", wrong: ["카사블랑카", "마라케시"] },
+  { c: "아프리카", country: "나이지리아", answer: "아부자", wrong: ["라고스", "카노"] },
+  { c: "아프리카", country: "케냐", answer: "나이로비", wrong: ["몸바사", "다르에스살람"] },
+];
