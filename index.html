@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>세계 수도 퀴즈</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
@@ -15,25 +15,30 @@
   <section id="view-start">
     <div class="eyebrow">세계 수도송 1탄</div>
     <h1>세계 수도 퀴즈</h1>
-    <p class="lede">36개 나라의 수도를 고릅니다. 모든 문항에 답해야 결과가 나오고, 주차별 점수가 학번으로 누적됩니다.</p>
+    <p class="lede">우리는 자랑스러운 정화예술인! 외울 수 있다!</p>
 
     <form id="start-form" class="card stack" style="margin-top:22px" novalidate>
       <div class="grid-2">
         <div class="field">
           <label for="section">분반</label>
-          <input id="section" name="section" placeholder="예: 01" required autocomplete="off">
+          <select id="section" name="section" required>
+            <option value="">선택</option>
+            <option value="1">1분반 (월 오전 10시~)</option>
+            <option value="2">2분반 (월 오후 1시~)</option>
+            <option value="3">3분반 (월 오후 4시~)</option>
+            <option value="4">4분반 (화 오전 10시~)</option>
+          </select>
         </div>
         <div class="field">
           <label for="week">주차</label>
-          <select id="week" name="week" required>
-            <option value="">선택</option>
-          </select>
+          <input id="week" name="week" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2"
+                 placeholder="숫자만 입력 ex. 5" required autocomplete="off">
         </div>
       </div>
       <div class="grid-2">
         <div class="field">
           <label for="student_id">학번</label>
-          <input id="student_id" name="student_id" placeholder="예: 2026123" required inputmode="numeric" autocomplete="off">
+          <input id="student_id" name="student_id" placeholder="예: 20260102" required inputmode="numeric" autocomplete="off">
         </div>
         <div class="field">
           <label for="name">이름</label>
@@ -62,7 +67,7 @@
       <p class="err" id="quiz-err" hidden></p>
       <div class="toolbar" style="margin-top:20px">
         <button class="btn" type="submit" id="submit-btn">제출하고 채점</button>
-        <span class="hint">모든 문항이 필수입니다. 빠진 문항은 빨간 테두리로 표시됩니다.</span>
+        <span class="hint">모든 문항이 필수입니다.</span>
       </div>
     </form>
   </section>
@@ -80,16 +85,18 @@
       <span class="pill bad" id="res-wrong-count"></span>
     </div>
     <ul class="wrong-list" id="res-wrong"></ul>
-    <div class="all-correct" id="res-perfect" hidden>모든 문항을 맞혔습니다.</div>
+    <div class="all-correct" id="res-perfect" hidden>모든 문항을 맞혔습니다. 자랑스러운 정화예술인!</div>
 
     <div class="section-title">
       <h2>주차별 누적 기록</h2>
       <span class="hint" id="hist-hint"></span>
     </div>
     <div class="timeline" id="timeline"></div>
-    <div id="hist-list" class="stack"></div>
+    <div class="hist-grid" id="hist-list"></div>
 
-    <div class="toolbar" style="margin-top:30px">
+    <div class="cheer" id="cheer"></div>
+
+    <div class="toolbar" style="margin-top:22px">
       <button class="btn ghost" type="button" id="btn-home">처음으로</button>
     </div>
   </section>
@@ -104,44 +111,42 @@
 (function () {
   const ITEMS = window.QUIZ_ITEMS;
   const TOTAL = ITEMS.length;
+  const POOL = ITEMS.map((i) => i.answer);
   const $ = (id) => document.getElementById(id);
   const views = { start: $("view-start"), quiz: $("view-quiz"), result: $("view-result") };
   function show(name) {
     Object.keys(views).forEach((k) => (views[k].hidden = k !== name));
     window.scrollTo({ top: 0 });
   }
+  const josaGa = (w) => { const c = w.charCodeAt(w.length - 1); return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 ? "이" : "가"; };
   const josa = (w) => { const c = w.charCodeAt(w.length - 1); return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 ? "은" : "는"; };
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-  // 주차 선택지 1~15
-  const weekSel = $("week");
-  for (let w = 1; w <= 15; w++) {
-    const o = document.createElement("option");
-    o.value = w; o.textContent = w + "주차";
-    weekSel.appendChild(o);
-  }
   $("total-n").textContent = TOTAL;
 
-  let student = null; // {section, student_id, name, week}
+  let student = null;      // {section, student_id, name, week}
+  let triedSubmit = false; // 한 번이라도 제출을 눌렀는지
 
   // ---------- 시작 ----------
   $("start-form").addEventListener("submit", (e) => {
     e.preventDefault();
     const f = e.target;
+    const week = parseInt(String(f.week.value).replace(/[^0-9]/g, ""), 10);
     const s = {
-      section: f.section.value.trim(),
+      section: f.section.value,
       student_id: f.student_id.value.trim(),
       name: f.name.value.trim(),
-      week: parseInt(f.week.value, 10),
+      week: week,
     };
     const err = $("start-err");
-    if (!s.section || !s.student_id || !s.name || !s.week) {
+    if (!s.section || !s.student_id || !s.name || !week || week < 1) {
       err.textContent = "분반, 주차, 학번, 이름을 모두 입력하세요.";
       err.hidden = false;
       return;
     }
     err.hidden = true;
     student = s;
+    triedSubmit = false;
     buildQuiz();
     $("quiz-who").textContent = `${s.section}분반 · ${s.name} · ${s.week}주차`;
     show("quiz");
@@ -155,6 +160,17 @@
     }
     return a;
   }
+  // 오답 보기 2개를 수도송에 나오는 다른 수도에서 뽑는다
+  function makeChoices(answer) {
+    const others = POOL.filter((x) => x !== answer);
+    const picked = [];
+    while (picked.length < 2) {
+      const c = others[Math.floor(Math.random() * others.length)];
+      if (!picked.includes(c)) picked.push(c);
+    }
+    return shuffle([answer, ...picked]);
+  }
+
   function buildQuiz() {
     const body = $("quiz-body");
     body.innerHTML = "";
@@ -167,15 +183,14 @@
         body.appendChild(h);
         lastC = it.c;
       }
-      const choices = shuffle([it.answer, ...it.wrong]);
       const q = document.createElement("div");
       q.className = "q";
       q.id = "q-" + i;
       q.innerHTML =
         `<div class="country">${esc(it.country)}<small>( &nbsp;&nbsp;&nbsp;&nbsp; )</small></div>` +
         `<div class="choices">` +
-        choices.map((c) =>
-          `<label class="choice"><input type="radio" name="q${i}" value="${esc(c)}" required><span>${esc(c)}</span></label>`
+        makeChoices(it.answer).map((c) =>
+          `<label class="choice"><input type="radio" name="q${i}" value="${esc(c)}"><span>${esc(c)}</span></label>`
         ).join("") +
         `</div>`;
       body.appendChild(q);
@@ -192,33 +207,45 @@
     $("answered").textContent = n;
     $("bar").style.width = (n / TOTAL) * 100 + "%";
   }
+  function goToFirstMissing() {
+    const el = document.querySelector(".q.missing");
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+    return el;
+  }
+  // 표시된 문항을 채우면 다음 미응답 문항으로 이동
   $("quiz-body").addEventListener("change", (e) => {
-    if (e.target.type === "radio") {
-      e.target.closest(".q").classList.remove("missing");
-      updateProgress();
+    if (e.target.type !== "radio") return;
+    const box = e.target.closest(".q");
+    const wasMissing = box.classList.contains("missing");
+    box.classList.remove("missing");
+    updateProgress();
+    if (triedSubmit) {
+      const left = document.querySelectorAll(".q.missing").length;
+      const err = $("quiz-err");
+      if (left === 0) { err.hidden = true; }
+      else {
+        err.textContent = `아직 ${left}문항이 남았습니다.`;
+        if (wasMissing) setTimeout(goToFirstMissing, 200);
+      }
     }
   });
 
   $("quiz-form").addEventListener("submit", async (e) => {
     e.preventDefault();
+    triedSubmit = true;
     const err = $("quiz-err");
     const answers = {};
-    let firstMissing = null;
+    let missing = 0;
     ITEMS.forEach((it, i) => {
       const sel = document.querySelector(`input[name=q${i}]:checked`);
       const box = $("q-" + i);
-      if (!sel) {
-        box.classList.add("missing");
-        if (!firstMissing) firstMissing = box;
-      } else {
-        answers[it.country] = sel.value;
-      }
+      if (!sel) { box.classList.add("missing"); missing++; }
+      else { box.classList.remove("missing"); answers[it.country] = sel.value; }
     });
-    if (firstMissing) {
-      const missing = TOTAL - answeredCount();
-      err.textContent = `아직 ${missing}문항이 남았습니다. 빨간 문항을 확인하세요.`;
+    if (missing) {
+      err.textContent = `아직 ${missing}문항이 남았습니다. 빨간 점선 문항을 채워 주세요.`;
       err.hidden = false;
-      firstMissing.scrollIntoView({ behavior: "smooth", block: "center" });
+      goToFirstMissing();
       return;
     }
     err.hidden = true;
@@ -231,26 +258,17 @@
 
     const btn = $("submit-btn");
     btn.disabled = true; btn.textContent = "저장 중…";
-    let history = [];
-    let saveErr = null;
+    let history = [], saveErr = null;
     try {
       await window.QuizAPI.saveAttempt(attempt);
       history = await window.QuizAPI.getHistory(student.student_id, student.name);
-    } catch (ex) {
-      saveErr = ex;
-      console.error(ex);
-    }
+    } catch (ex) { saveErr = ex; console.error(ex); }
     btn.disabled = false; btn.textContent = "제출하고 채점";
     renderResult(attempt, history, saveErr);
     show("result");
   });
 
   // ---------- 결과 ----------
-  function latestPerWeek(history) {
-    const map = new Map();
-    history.forEach((h) => map.set(h.week, h)); // history는 week, created_at 오름차순 → 마지막이 최신
-    return [...map.values()].sort((a, b) => a.week - b.week);
-  }
   function renderResult(attempt, history, saveErr) {
     const s = attempt;
     $("res-eyebrow").textContent = `${s.week}주차 결과`;
@@ -264,58 +282,111 @@
     $("res-perfect").hidden = s.wrong.length !== 0;
     s.wrong.forEach((w) => {
       const li = document.createElement("li");
-      li.innerHTML = `<span><b>${esc(w.country)}</b>${josa(w.country)} <b>${esc(w.answer)}</b></span><span class="chosen">선택: ${esc(w.chosen)}</span>`;
+      li.innerHTML =
+        `<span class="ans"><b>${esc(w.country)}</b>의 수도는 <b>${esc(w.answer)}</b>${josaGa(w.answer)} 정답!</span>` +
+        `<span class="chosen">나의 선택: ${esc(w.chosen)}</span>`;
       ul.appendChild(li);
     });
 
-    // 누적
-    const tl = $("timeline");
-    const list = $("hist-list");
+    const tl = $("timeline"), list = $("hist-list"), hint = $("hist-hint");
     tl.innerHTML = ""; list.innerHTML = "";
-    const hint = $("hist-hint");
     if (saveErr) {
-      hint.textContent = "저장에 실패해 이번 점수는 기록되지 않았습니다. 교수자에게 화면을 보여주세요.";
       hint.className = "err";
+      hint.textContent = "저장에 실패해 이번 점수는 기록되지 않았습니다.";
       history = [Object.assign({ created_at: new Date().toISOString() }, attempt)];
     } else {
       hint.className = "hint";
-      hint.textContent = window.QuizAPI.mode === "local" ? "(테스트 모드: 이 브라우저에만 저장됨)" : "";
+      hint.textContent = window.QuizAPI.mode === "local" ? "(연습 모드: 이 브라우저에만 저장됩니다)" : "최근 3회";
     }
-    const weeks = latestPerWeek(history);
-    weeks.forEach((h, i) => {
+
+    // 시간 순으로 정렬해 "최근 3번 시도"만 사용 (주차 번호를 잘못 넣어도 순서가 꼬이지 않게)
+    const byTime = [...history].sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)));
+    const recent3 = byTime.slice(-3);            // 오래된 → 최신
+    const latest = recent3[recent3.length - 1];  // 이번 시도
+
+    recent3.forEach((h, i, arr) => {
       if (i > 0) {
-        const prev = weeks[i - 1];
-        const d = h.score - prev.score;
+        const d = h.score - arr[i - 1].score;
         const cls = d > 0 ? "up" : d < 0 ? "down" : "same";
-        const txt = d > 0 ? `+${d}` : d < 0 ? `${d}` : "±0";
         const ar = document.createElement("div");
         ar.className = "tl-arrow";
-        ar.innerHTML = `→<div class="delta ${cls}">${txt}</div>`;
+        ar.innerHTML = `→<div class="delta ${cls}">${d > 0 ? "+" + d : d < 0 ? d : "±0"}</div>`;
         tl.appendChild(ar);
       }
       const it = document.createElement("div");
-      it.className = "tl-item" + (h.week === s.week ? " now" : "");
-      it.innerHTML = `<div class="wk">${h.week}주차</div><div class="sc">${h.score}<span style="font-size:.9rem;color:var(--muted)">/${h.total}</span></div>`;
+      it.className = "tl-item" + (h === latest ? " now" : "");
+      it.innerHTML = `<div class="wk">${h.week}주차</div><div class="sc">${h.score}<span style="font-size:.85rem;color:var(--muted)">/${h.total}</span></div>`;
       tl.appendChild(it);
     });
 
-    // 주차별 틀린 문항 (모든 시도 표시)
-    history.forEach((h) => {
-      const d = document.createElement("details");
-      d.className = "hist";
-      d.open = h.week === s.week;
-      const when = new Date(h.created_at).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" });
+    renderCheer(s, recent3);
+
+    // 카드는 최신이 왼쪽
+    [...recent3].reverse().forEach((h) => {
       const wrongs = Array.isArray(h.wrong) ? h.wrong : [];
-      d.innerHTML =
-        `<summary><span>${h.week}주차 <span class="hint">${when}</span></span>` +
-        `<span class="sc">${h.score} / ${h.total} <span class="pill ${wrongs.length ? "bad" : "ok"}">틀림 ${wrongs.length}</span></span></summary>` +
+      const when = new Date(h.created_at).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" });
+      const card = document.createElement("div");
+      card.className = "hist" + (h === latest ? " current" : "");
+      card.innerHTML =
+        `<div class="head"><span class="wk">${h.week}주차 <span class="when">${when}</span></span>` +
+        `<span class="sc">${h.score}/${h.total} <span class="pill ${wrongs.length ? "bad" : "ok"}">틀림 ${wrongs.length}</span></span></div>` +
         `<div class="body">` +
         (wrongs.length
-          ? `<ul>${wrongs.map((w) => `<li><b>${esc(w.country)}</b>${josa(w.country)} ${esc(w.answer)} <span class="hint">(선택: ${esc(w.chosen)})</span></li>`).join("")}</ul>`
-          : `<p class="hint" style="margin:10px 0 0">틀린 문항 없음</p>`) +
+          ? `<ul>${wrongs.map((w) => `<li><b>${esc(w.country)}</b>${josa(w.country)} ${esc(w.answer)}</li>`).join("")}</ul>`
+          : `<p class="hint" style="margin:0">틀린 문항 없음</p>`) +
         `</div>`;
-      list.appendChild(d);
+      list.appendChild(card);
     });
+  }
+
+  // ---------- 격려 메시지 ----------
+  const CHEERS = {
+    perfect: [
+      "36개 전부 정답! 완벽해. 세계 수도는 이제 네 거야.",
+      "만점이라니! 정화예술인의 자부심, 오늘 네가 보여줬어.",
+      "한 문제도 안 놓쳤네. 진짜 멋지다. 다음 주에도 이 기세 그대로!",
+    ],
+    bigUp: [
+      "지난번보다 {d}개나 더 맞췄네? 대단하다. 역시 해낼 줄 알았어!",
+      "{d}개 상승! 이렇게 확 오르기 쉽지 않은데, 정말 열심히 외웠구나. 멋져!",
+      "와, {prev}점에서 {now}점. 노력이 그대로 보여. 자랑스럽다!",
+    ],
+    up: [
+      "지난번보다 {d}개 더 맞췄어. 한 걸음씩 올라가는 게 제일 확실한 길이야. 잘하고 있어!",
+      "{prev}점 → {now}점, 올라갔네! 이 방향 그대로 가자. 멋져!",
+      "조금씩 늘고 있어. 이런 꾸준함이 결국 끝까지 해내는 힘이야.",
+    ],
+    same: [
+      "지난번과 같은 {now}점. 유지한 것도 실력이야. 다음엔 한 개만 더 노려보자!",
+      "점수는 같지만 틀린 문항이 달라졌을 거야. 이번에 틀린 것만 다시 보면 다음엔 올라가.",
+      "{now}점 지켰네. 여기서 딱 몇 개만 더! 할 수 있어.",
+    ],
+    down: [
+      "지난주에 맞춘 건 이미 네 안에 있어. 오늘 틀린 것만 한 번 더 보면 다음 주엔 다시 올라가. 넌 할 수 있어!",
+      "오늘도 36개 끝까지 다 풀었잖아. 그 끈기가 진짜 실력이야. 다음 주가 기대돼!",
+      "점수는 오르락내리락해도 외운 건 쌓이고 있어. 이번 주 틀린 것만 챙기면 돼. 응원할게!",
+    ],
+    first: [
+      "첫 도전 {now}점! 시작이 반이야. 다음 주에 얼마나 오르는지 같이 보자.",
+      "첫 기록 남겼어. 수도송 한 번만 더 듣고 오면 다음엔 확 오를 거야. 할 수 있어!",
+      "36개 다 풀어낸 것부터 대단해. 여기서부터 올라가는 일만 남았어!",
+    ],
+  };
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+  function renderCheer(s, recent) {
+    const prev = recent.length > 1 ? recent[recent.length - 2] : null;
+    let key, d = 0;
+    if (s.score === s.total) key = "perfect";
+    else if (!prev) key = "first";
+    else {
+      d = s.score - prev.score;
+      key = d >= 5 ? "bigUp" : d > 0 ? "up" : d === 0 ? "same" : "down";
+    }
+    const msg = pick(CHEERS[key])
+      .replace(/{d}/g, Math.abs(d)).replace(/{now}/g, s.score).replace(/{prev}/g, prev ? prev.score : "");
+    const el = $("cheer");
+    el.className = "cheer " + key;
+    el.innerHTML = `<div class="cheer-label">${esc(s.name)}에게</div><p>${esc(msg)}</p>`;
   }
 
   $("btn-home").addEventListener("click", () => {

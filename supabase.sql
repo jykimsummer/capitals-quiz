@@ -42,7 +42,7 @@ language sql security definer set search_path = public as $$
   select * from public.attempts
   where student_id = p_student_id
     and replace(name, ' ', '') = replace(p_name, ' ', '')
-  order by week, created_at;
+  order by created_at;
 $$;
 grant execute on function public.get_history(text, text) to anon;
 

@@ -52,7 +52,7 @@
       }
       return lsAll()
         .filter((r) => r.student_id === student_id && norm(r.name) === norm(name))
-        .sort((a, b) => a.week - b.week || a.created_at.localeCompare(b.created_at));
+        .sort((a, b) => a.created_at.localeCompare(b.created_at));
     },
 
     async adminAttempts(password) {
