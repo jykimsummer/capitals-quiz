@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>세계 수도 퀴즈 · 교수자</title>
+<title>자기주도적학습코칭 완전정복 · 교수자</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
 <link rel="stylesheet" href="styles.css">
@@ -26,7 +26,7 @@
 <body>
 <div class="wrap">
   <div class="eyebrow">교수자용</div>
-  <h1>세계 수도 퀴즈 결과</h1>
+  <h1>퀴즈 결과</h1>
 
   <form id="login" class="card" style="margin-top:20px;max-width:420px">
     <div class="field">
@@ -43,6 +43,17 @@
         <label for="f-section">분반</label>
         <select id="f-section"><option value="">전체</option></select>
       </div>
+      <div class="field" style="min-width:180px">
+        <label for="f-mode">유형</label>
+        <select id="f-mode">
+          <option value="capital">세계수도송 (전체 방식)</option>
+          <option value="theory">수업이론 (전체 방식)</option>
+          <option value="motivation">학습동기 진단</option>
+          <option value="style">학습스타일 진단</option>
+          <option value="mindset">마인드셋 진단</option>
+          <option value="">전체 (섞여서 보임)</option>
+        </select>
+      </div>
       <div class="field" style="flex:1;min-width:200px">
         <label for="f-q">학번·이름 검색</label>
         <input id="f-q" placeholder="검색">
@@ -58,7 +69,7 @@
 
     <div class="kpi" id="kpi"></div>
 
-    <div class="section-title"><h2>학생별 주차별 점수</h2><span class="hint">같은 주차를 여러 번 풀면 마지막 점수 기준 · 행을 누르면 틀린 문항</span></div>
+    <div class="section-title"><h2>학생별 주차별 점수</h2><span class="hint">위에서 고른 유형만 표시 · 같은 주차를 여러 번 풀면 마지막 점수 기준 · 행을 누르면 상세</span></div>
     <div class="tbl-wrap"><table class="tbl" id="pivot"></table></div>
   </div>
 
@@ -106,12 +117,28 @@
     sel.value = cur;
   }
   $("f-section").addEventListener("change", render);
+  $("f-mode").addEventListener("change", render);
   $("f-q").addEventListener("input", render);
 
+  const MODE_LABEL = {
+    "capital-mc": "수도송 객관식", "capital-text": "수도송 주관식",
+    "capital-rmc": "수도송 랜덤객관식", "capital-rtext": "수도송 랜덤주관식",
+    "theory-mc": "이론 객관식", "theory-text": "이론 주관식",
+    motivation: "학습동기", style: "학습스타일", mindset: "마인드셋",
+  };
+  // 유형 필터: capital / theory 는 방식 전체를 묶고, 진단 3종은 각각
+  function inMode(r, sel) {
+    const m = r.mode || "capital-mc";
+    if (!sel) return true;
+    if (sel === "capital" || sel === "theory") return m.startsWith(sel + "-");
+    return m === sel;
+  }
   function filtered() {
     const sec = $("f-section").value;
+    const mode = $("f-mode").value;
     const q = $("f-q").value.trim().toLowerCase();
-    return rows.filter((r) => (!sec || r.section === sec) && (!q || (r.student_id + r.name).toLowerCase().includes(q)));
+    return rows.filter((r) => (!sec || r.section === sec) && inMode(r, mode) &&
+      (!q || (r.student_id + r.name).toLowerCase().includes(q)));
   }
 
   // 학생 × 주차 피벗 (마지막 시도 기준)
@@ -157,8 +184,10 @@
       weeks.forEach((w) => {
         const r = s.byWeek[w];
         if (!r) { html += `<td class="cell miss">–</td>`; return; }
+        if (!r.total) { html += `<td class="cell">제출</td>`; return; }
         const cls = r.score === total ? "top" : r.score < total * 0.6 ? "low" : "";
-        html += `<td class="cell ${cls}">${r.score}${s.tries[w] > 1 ? `<span class="n">×${s.tries[w]}</span>` : ""}</td>`;
+        const ml = MODE_LABEL[r.mode || "capital-mc"] || "";
+        html += `<td class="cell ${cls}" title="${esc(ml)}">${r.score}${s.tries[w] > 1 ? `<span class="n">×${s.tries[w]}</span>` : ""}</td>`;
       });
       html += `<td class="num ${d > 0 ? "delta up" : d < 0 ? "delta down" : ""}">${d === null ? "" : d > 0 ? "+" + d : d}</td></tr>`;
       // 상세 행
@@ -201,9 +230,9 @@
     download("수도퀴즈_주차별점수.csv", csv(out));
   });
   $("btn-csv-raw").addEventListener("click", () => {
-    const out = [["분반", "학번", "이름", "주차", "점수", "만점", "틀린문항", "제출시각"]];
+    const out = [["분반", "학번", "이름", "유형", "주차", "점수", "만점", "틀린문항", "제출시각"]];
     filtered().forEach((r) => out.push([
-      r.section, r.student_id, r.name, r.week, r.score, r.total,
+      r.section, r.student_id, r.name, MODE_LABEL[r.mode || "capital-mc"] || r.mode, r.week, r.score, r.total,
       (r.wrong || []).map((x) => `${x.country}(${x.chosen}→${x.answer})`).join(" "),
       new Date(r.created_at).toLocaleString("ko-KR"),
     ]));

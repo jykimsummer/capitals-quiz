@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>세계 수도 퀴즈</title>
+<title>자기주도적학습코칭 완전정복</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
 <link rel="stylesheet" href="styles.css">
@@ -13,8 +13,8 @@
 
   <!-- ===== 1. 시작 화면 ===== -->
   <section id="view-start">
-    <div class="eyebrow">세계 수도송 1탄</div>
-    <h1>세계 수도 퀴즈</h1>
+    <div class="eyebrow">정화예술대학교 · 교양학부</div>
+    <h1>자기주도적학습코칭 완전정복</h1>
     <p class="lede">우리는 자랑스러운 정화예술인! 외울 수 있다!</p>
 
     <form id="start-form" class="card stack" style="margin-top:22px" novalidate>
@@ -45,6 +45,35 @@
           <input id="name" name="name" placeholder="홍길동" required autocomplete="off">
         </div>
       </div>
+      <div class="field">
+        <label>무엇을 풀까요?</label>
+        <div class="seg" id="subject-seg">
+          <label class="seg-item"><input type="radio" name="subject" value="capital"><span>세계수도송</span></label>
+          <label class="seg-item"><input type="radio" name="subject" value="theory"><span>수업이론</span></label>
+        </div>
+        <div class="seg seg-3" id="subject-seg-2">
+          <label class="seg-item"><input type="radio" name="subject" value="motivation"><span>학습동기 유형<small>20문항 · 진단</small></span></label>
+          <label class="seg-item"><input type="radio" name="subject" value="style"><span>학습스타일<small>12문항 · 진단</small></span></label>
+          <label class="seg-item"><input type="radio" name="subject" value="mindset"><span>마인드셋<small>12문항 · 진단</small></span></label>
+        </div>
+        <p class="hint" id="subject-soon" hidden>등급이 아니라 지금 내 위치를 찍는 자가진단입니다. 5점 척도로 솔직하게 답하면 결과와 코멘트가 나옵니다.</p>
+      </div>
+      <div class="field" id="mode-capital" hidden>
+        <label>세계수도송 · 문제 방식</label>
+        <div class="seg seg-4">
+          <label class="seg-item"><input type="radio" name="mode" value="capital-mc"><span>객관식<small>노래 순서 · 3지선다</small></span></label>
+          <label class="seg-item"><input type="radio" name="mode" value="capital-text"><span>주관식<small>노래 순서 · 직접 쓰기</small></span></label>
+          <label class="seg-item"><input type="radio" name="mode" value="capital-rmc"><span>랜덤 객관식<small>순서 섞음 · 3지선다</small></span></label>
+          <label class="seg-item"><input type="radio" name="mode" value="capital-rtext"><span>랜덤 주관식<small>순서 섞음 · 직접 쓰기</small></span></label>
+        </div>
+      </div>
+      <div class="field" id="mode-theory" hidden>
+        <label>수업이론 · 문제 방식</label>
+        <div class="seg">
+          <label class="seg-item"><input type="radio" name="mode" value="theory-mc"><span>객관식<small>문제은행에서 18문항 · 고르기</small></span></label>
+          <label class="seg-item"><input type="radio" name="mode" value="theory-text"><span>주관식<small>문제은행에서 18문항 · 직접 쓰기</small></span></label>
+        </div>
+      </div>
       <p class="err" id="start-err" hidden></p>
       <div class="toolbar">
         <button class="btn" type="submit">퀴즈 시작</button>
@@ -57,7 +86,7 @@
   <section id="view-quiz" hidden>
     <div class="progress">
       <div class="row">
-        <span id="quiz-who"></span>
+        <span><button type="button" class="back" id="btn-back">← 뒤로</button><span id="quiz-who"></span></span>
         <span><span class="num" id="answered">0</span> / <span class="num" id="total-n">36</span></span>
       </div>
       <div class="bar"><i id="bar"></i></div>
@@ -72,9 +101,67 @@
     </form>
   </section>
 
+  <!-- ===== 2-b. 진단 화면 ===== -->
+  <section id="view-diag" hidden>
+    <div class="sticky-head">
+      <div class="row">
+        <span class="who-line"><button type="button" class="back" id="btn-back-d">← 뒤로</button><span id="diag-who"></span></span>
+        <span class="count"><span class="num" id="d-answered">0</span> / <span class="num" id="d-total">0</span></span>
+      </div>
+      <div class="bar"><i id="d-bar"></i></div>
+      <div class="sticky-title"><span class="eyebrow" id="diag-eyebrow"></span><strong id="diag-title"></strong></div>
+      <div class="scale-legend"><span>1 전혀 아니다</span><span>3 보통이다</span><span>5 매우 그렇다</span></div>
+    </div>
+    <p class="hint" id="diag-guide" style="margin:10px 0 14px"></p>
+    <form id="diag-form" novalidate>
+      <div id="diag-body"></div>
+      <p class="err" id="diag-err" hidden></p>
+      <div class="toolbar" style="margin-top:20px">
+        <button class="btn" type="submit" id="diag-submit">제출하고 결과 보기</button>
+        <span class="hint">모든 문항이 필수입니다.</span>
+      </div>
+    </form>
+  </section>
+
+  <!-- ===== 3-b. 진단 결과 화면 ===== -->
+  <section id="view-dresult" hidden>
+    <div class="eyebrow" id="dr-eyebrow"></div>
+    <h2 id="dr-title"></h2>
+    <div class="who" id="dr-who" style="color:var(--ink-soft);margin:4px 0 16px"></div>
+
+    <div class="dr-headline" id="dr-headline"></div>
+    <div id="dr-composite" class="dr-composite"></div>
+
+    <div class="section-title"><h2>영역별 점수</h2><span class="hint" id="dr-total"></span></div>
+    <div id="dr-factors" class="stack"></div>
+
+    <div class="section-title"><h2>특히 눈여겨볼 문항</h2><span class="hint">가장 치우치게 답한 순서</span></div>
+    <div id="dr-focus" class="focus-box"></div>
+
+    <div class="section-title"><h2>코치 코멘트</h2></div>
+    <div id="dr-lines" class="dr-lines"></div>
+
+    <p class="hint" id="dr-source" style="margin-top:14px"></p>
+    <div class="toolbar" style="margin-top:22px">
+      <button class="btn ghost" type="button" id="btn-home-3">처음으로</button>
+    </div>
+  </section>
+
   <!-- ===== 3. 결과 화면 ===== -->
   <section id="view-result" hidden>
     <div class="eyebrow" id="res-eyebrow"></div>
+
+    <!-- 수업이론 주관식: 채점 없이 나의 답안 ↔ 모범답안 -->
+    <div id="res-essay" hidden>
+      <div class="notice">주관식 문항이 출제되는 경우, 본인이 직접 자신의 생각을 기술할 수 있어야 합니다.</div>
+      <div class="who" id="essay-who" style="color:var(--ink-soft);margin:10px 0 18px"></div>
+      <ol class="essay-list" id="essay-list"></ol>
+      <div class="toolbar" style="margin-top:26px">
+        <button class="btn ghost" type="button" id="btn-home-2">처음으로</button>
+      </div>
+    </div>
+
+    <div id="res-graded">
     <div class="score-hero">
       <div class="big"><span id="res-score"></span><small id="res-total"></small></div>
       <div class="who" id="res-who"></div>
@@ -99,21 +186,39 @@
     <div class="toolbar" style="margin-top:22px">
       <button class="btn ghost" type="button" id="btn-home">처음으로</button>
     </div>
+    </div>
   </section>
 
-  <footer>세계 수도 퀴즈 · 정화예술대학교 교양학부</footer>
+  <footer>자기주도적학습코칭 완전정복 · 정화예술대학교 교양학부</footer>
 </div>
 
 <script src="config.js"></script>
 <script src="quiz-data.js"></script>
+<script src="theory-data.js"></script>
+<script src="diag-data.js"></script>
 <script src="api.js"></script>
 <script>
 (function () {
-  const ITEMS = window.QUIZ_ITEMS;
-  const TOTAL = ITEMS.length;
-  const POOL = ITEMS.map((i) => i.answer);
+  const CAPITALS = window.QUIZ_ITEMS;
+  const THEORY = window.THEORY_ITEMS;
+  const POOL = CAPITALS.map((i) => i.answer);
+  const MODES = {
+    "capital-mc":    { label: "세계수도송 · 객관식",       src: "capital", type: "mc",   random: false },
+    "capital-text":  { label: "세계수도송 · 주관식",       src: "capital", type: "text", random: false },
+    "capital-rmc":   { label: "세계수도송 · 랜덤 객관식",  src: "capital", type: "mc",   random: true  },
+    "capital-rtext": { label: "세계수도송 · 랜덤 주관식",  src: "capital", type: "text", random: true  },
+    "theory-mc":     { label: "수업이론 · 객관식",         src: "theory",  type: "mc",   random: false },
+    "theory-text":   { label: "수업이론 · 주관식",         src: "theory",  type: "text", random: false },
+  };
+  const THEORY_DRAW = 18;  // 수업이론: 한 번에 출제되는 문항 수
+  let ITEMS = [];   // 이번 퀴즈의 문항 목록 (통일된 형태: {q, a, choices?, keys?, ordered?, country?})
+  let TOTAL = 0;
+  let MODE = null;
   const $ = (id) => document.getElementById(id);
-  const views = { start: $("view-start"), quiz: $("view-quiz"), result: $("view-result") };
+  const views = { start: $("view-start"), quiz: $("view-quiz"), result: $("view-result"), diag: $("view-diag"), dresult: $("view-dresult") };
+  const DIAG = window.DIAG;
+  const DIAG_KEYS = ["motivation", "style", "mindset"];
+  const DIAG_LABEL = { motivation: "학습동기 유형", style: "학습스타일", mindset: "마인드셋" };
   function show(name) {
     Object.keys(views).forEach((k) => (views[k].hidden = k !== name));
     window.scrollTo({ top: 0 });
@@ -122,7 +227,14 @@
   const josa = (w) => { const c = w.charCodeAt(w.length - 1); return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 ? "은" : "는"; };
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-  $("total-n").textContent = TOTAL;
+  document.querySelectorAll('input[name="subject"]').forEach((r) => r.addEventListener("change", () => {
+    const v = r.value;
+    $("mode-capital").hidden = v !== "capital";
+    $("mode-theory").hidden = v !== "theory";
+    $("subject-soon").hidden = (v === "capital" || v === "theory");
+    $("start-err").hidden = true;
+    document.querySelectorAll('input[name="mode"]').forEach((m) => { m.checked = false; });
+  }));
 
   let student = null;      // {section, student_id, name, week}
   let triedSubmit = false; // 한 번이라도 제출을 눌렀는지
@@ -139,16 +251,33 @@
       week: week,
     };
     const err = $("start-err");
+    const modeEl = document.querySelector('input[name="mode"]:checked');
     if (!s.section || !s.student_id || !s.name || !week || week < 1) {
       err.textContent = "분반, 주차, 학번, 이름을 모두 입력하세요.";
       err.hidden = false;
       return;
     }
+    const subj = document.querySelector('input[name="subject"]:checked');
+    if (subj && DIAG_KEYS.includes(subj.value)) {
+      err.hidden = true;
+      s.mode = subj.value;
+      student = s;
+      buildDiag(subj.value);
+      show("diag");
+      return;
+    }
+    if (!modeEl) {
+      err.textContent = "풀 항목을 고르고, 문제 방식을 선택하세요.";
+      err.hidden = false;
+      return;
+    }
     err.hidden = true;
+    s.mode = modeEl.value;
+    MODE = MODES[s.mode];
     student = s;
     triedSubmit = false;
     buildQuiz();
-    $("quiz-who").textContent = `${s.section}분반 · ${s.name} · ${s.week}주차`;
+    $("quiz-who").textContent = `${s.section}분반 · ${s.name} · ${s.week}주차 · ${MODE.label}`;
     show("quiz");
   });
 
@@ -172,11 +301,23 @@
   }
 
   function buildQuiz() {
+    // 문항 목록 만들기
+    if (MODE.src === "capital") {
+      ITEMS = CAPITALS.map((it) => ({ q: it.country, a: it.answer, c: it.c, country: it.country }));
+    } else {
+      // 문제은행에서 매번 THEORY_DRAW개를 무작위로 뽑고 순서도 섞는다
+      ITEMS = shuffle(THEORY.map((it) => Object.assign({}, it))).slice(0, THEORY_DRAW);
+    }
+    if (MODE.random) ITEMS = shuffle(ITEMS);
+    TOTAL = ITEMS.length;
+    $("total-n").textContent = TOTAL;
+
     const body = $("quiz-body");
     body.innerHTML = "";
     let lastC = null;
     ITEMS.forEach((it, i) => {
-      if (it.c !== lastC) {
+      // 대륙 소제목은 노래 순서 객관식/주관식에서만
+      if (MODE.src === "capital" && !MODE.random && it.c !== lastC) {
         const h = document.createElement("div");
         h.className = "continent";
         h.innerHTML = `<span class="eyebrow" style="margin:0">${esc(it.c)}</span>`;
@@ -186,20 +327,56 @@
       const q = document.createElement("div");
       q.className = "q";
       q.id = "q-" + i;
-      q.innerHTML =
-        `<div class="country">${esc(it.country)}<small>( &nbsp;&nbsp;&nbsp;&nbsp; )</small></div>` +
-        `<div class="choices">` +
-        makeChoices(it.answer).map((c) =>
-          `<label class="choice"><input type="radio" name="q${i}" value="${esc(c)}"><span>${esc(c)}</span></label>`
-        ).join("") +
-        `</div>`;
+      const title = MODE.src === "capital"
+        ? `<div class="country">${esc(it.country)}<small>( &nbsp;&nbsp;&nbsp;&nbsp; )</small></div>`
+        : `<div class="country qtext"><span class="qn">${i + 1}.</span> ${esc(it.q)}</div>`;
+      let bodyHtml;
+      if (MODE.type === "mc") {
+        const choices = MODE.src === "capital" ? makeChoices(it.a) : shuffle([it.a, ...it.choices]);
+        bodyHtml = `<div class="choices${MODE.src === "theory" ? " choices-long" : ""}">` +
+          choices.map((c) => `<label class="choice"><input type="radio" name="q${i}" value="${esc(c)}"><span>${esc(c)}</span></label>`).join("") +
+          `</div>`;
+      } else {
+        bodyHtml = `<input class="ans-input" type="text" name="q${i}" autocomplete="off" autocapitalize="off" ` +
+          `placeholder="${MODE.src === "capital" ? "수도 이름" : "답을 쓰세요"}">`;
+      }
+      q.innerHTML = title + bodyHtml;
       body.appendChild(q);
     });
     updateProgress();
   }
+  // 응답값 읽기 (객관식: 선택값, 주관식: 입력값)
+  function getAnswer(i) {
+    if (MODE.type === "mc") { const r = document.querySelector(`input[name=q${i}]:checked`); return r ? r.value : ""; }
+    const t = document.querySelector(`input[name=q${i}]`); return t ? t.value.trim() : "";
+  }
+  // 주관식 채점: 띄어쓰기·대소문자·기호 무시
+  const norm = (x) => String(x || "").toLowerCase().replace(/[\s\.\-·,→()（）\[\]'"]/g, "");
+  function isCorrect(it, ans) {
+    if (MODE.type === "mc") return ans === it.a;
+    const n = norm(ans);
+    if (!n) return false;
+    if (MODE.src === "capital") {
+      const ok = [it.a].concat(window.CAPITAL_ALIASES[it.a] || []).map(norm);
+      return ok.includes(n);
+    }
+    // 이론: 키워드 그룹마다 하나 이상 포함, ordered면 순서대로
+    let last = -1;
+    for (const group of it.keys) {
+      let best = -1;
+      for (const k of group) {
+        const idx = n.indexOf(norm(k), it.ordered ? last + 1 : 0);
+        if (idx >= 0 && (best < 0 || idx < best)) best = idx;
+      }
+      if (best < 0) return false;
+      last = best;
+    }
+    return true;
+  }
+
   function answeredCount() {
     let n = 0;
-    for (let i = 0; i < TOTAL; i++) if (document.querySelector(`input[name=q${i}]:checked`)) n++;
+    for (let i = 0; i < TOTAL; i++) if (getAnswer(i)) n++;
     return n;
   }
   function updateProgress() {
@@ -213,8 +390,10 @@
     return el;
   }
   // 표시된 문항을 채우면 다음 미응답 문항으로 이동
+  $("quiz-body").addEventListener("input", () => updateProgress());
   $("quiz-body").addEventListener("change", (e) => {
-    if (e.target.type !== "radio") return;
+    if (e.target.type !== "radio" && e.target.type !== "text") return;
+    if (e.target.type === "text" && !e.target.value.trim()) return;
     const box = e.target.closest(".q");
     const wasMissing = box.classList.contains("missing");
     box.classList.remove("missing");
@@ -237,10 +416,10 @@
     const answers = {};
     let missing = 0;
     ITEMS.forEach((it, i) => {
-      const sel = document.querySelector(`input[name=q${i}]:checked`);
+      const val = getAnswer(i);
       const box = $("q-" + i);
-      if (!sel) { box.classList.add("missing"); missing++; }
-      else { box.classList.remove("missing"); answers[it.country] = sel.value; }
+      if (!val) { box.classList.add("missing"); missing++; }
+      else { box.classList.remove("missing"); answers[it.q] = val; }
     });
     if (missing) {
       err.textContent = `아직 ${missing}문항이 남았습니다. 빨간 점선 문항을 채워 주세요.`;
@@ -251,10 +430,14 @@
     err.hidden = true;
 
     const wrong = [];
-    ITEMS.forEach((it) => {
-      if (answers[it.country] !== it.answer) wrong.push({ country: it.country, answer: it.answer, chosen: answers[it.country] });
+    const essay = MODE.src === "theory" && MODE.type === "text";
+    if (!essay) ITEMS.forEach((it) => {
+      if (!isCorrect(it, answers[it.q])) wrong.push({ country: it.q, answer: it.a, chosen: answers[it.q] });
     });
-    const attempt = Object.assign({}, student, { score: TOTAL - wrong.length, total: TOTAL, wrong, answers });
+    // 이론 주관식은 점수 없이 제출만 기록 (score 0 / total 0)
+    const attempt = Object.assign({}, student, essay
+      ? { score: 0, total: 0, wrong: [], answers }
+      : { score: TOTAL - wrong.length, total: TOTAL, wrong, answers });
 
     const btn = $("submit-btn");
     btn.disabled = true; btn.textContent = "저장 중…";
@@ -264,14 +447,35 @@
       history = await window.QuizAPI.getHistory(student.student_id, student.name);
     } catch (ex) { saveErr = ex; console.error(ex); }
     btn.disabled = false; btn.textContent = "제출하고 채점";
-    renderResult(attempt, history, saveErr);
+    if (essay) renderEssay(attempt, saveErr); else renderResult(attempt, history, saveErr);
     show("result");
   });
 
+  // ---------- 결과: 이론 주관식 (채점 없음) ----------
+  function renderEssay(attempt, saveErr) {
+    $("res-graded").hidden = true;
+    $("res-essay").hidden = false;
+    $("res-eyebrow").textContent = `${attempt.week}주차 · ${MODE.label}`;
+    $("essay-who").textContent = `${attempt.section}분반 · ${attempt.student_id} · ${attempt.name}` +
+      (saveErr ? " · 저장에 실패했습니다" : window.QuizAPI.mode === "local" ? " · (연습 모드)" : " · 제출 완료");
+    const ol = $("essay-list");
+    ol.innerHTML = "";
+    ITEMS.forEach((it) => {
+      const li = document.createElement("li");
+      li.innerHTML =
+        `<div class="eq">${esc(it.q)}</div>` +
+        `<div class="erow"><span class="el">나의 답안</span><span class="ev mine">${esc(attempt.answers[it.q])}</span></div>` +
+        `<div class="erow"><span class="el">모범답안</span><span class="ev model">${esc(it.a)}</span></div>`;
+      ol.appendChild(li);
+    });
+  }
+
   // ---------- 결과 ----------
   function renderResult(attempt, history, saveErr) {
+    $("res-graded").hidden = false;
+    $("res-essay").hidden = true;
     const s = attempt;
-    $("res-eyebrow").textContent = `${s.week}주차 결과`;
+    $("res-eyebrow").textContent = `${s.week}주차 결과 · ${MODE.label}`;
     $("res-score").textContent = s.score;
     $("res-total").textContent = ` / ${s.total}점`;
     $("res-who").textContent = `${s.section}분반 · ${s.student_id} · ${s.name}`;
@@ -282,9 +486,12 @@
     $("res-perfect").hidden = s.wrong.length !== 0;
     s.wrong.forEach((w) => {
       const li = document.createElement("li");
-      li.innerHTML =
-        `<span class="ans"><b>${esc(w.country)}</b>의 수도는 <b>${esc(w.answer)}</b>${josaGa(w.answer)} 정답!</span>` +
-        `<span class="chosen">나의 선택: ${esc(w.chosen)}</span>`;
+      const isCap = MODE.src === "capital";
+      li.innerHTML = isCap
+        ? `<span class="ans"><b>${esc(w.country)}</b>의 수도는 <b>${esc(w.answer)}</b>${josaGa(w.answer)} 정답!</span>` +
+          `<span class="chosen">나의 ${MODE.type === "mc" ? "선택" : "답"}: ${esc(w.chosen)}</span>`
+        : `<span class="ans qwrap"><span class="qq">${esc(w.country)}</span><span class="correct">정답: <b>${esc(w.answer)}</b></span></span>` +
+          `<span class="chosen">나의 ${MODE.type === "mc" ? "선택" : "답"}: ${esc(w.chosen)}</span>`;
       ul.appendChild(li);
     });
 
@@ -296,10 +503,12 @@
       history = [Object.assign({ created_at: new Date().toISOString() }, attempt)];
     } else {
       hint.className = "hint";
-      hint.textContent = window.QuizAPI.mode === "local" ? "(연습 모드: 이 브라우저에만 저장됩니다)" : "최근 3회";
+      hint.textContent = (window.QuizAPI.mode === "local" ? "(연습 모드: 이 브라우저에만 저장됩니다) " : "") + `${MODE.src === "capital" ? "세계수도송" : "수업이론"} 최근 3회`;
     }
 
     // 시간 순으로 정렬해 "최근 3번 시도"만 사용 (주차 번호를 잘못 넣어도 순서가 꼬이지 않게)
+    const subjectOf = (m) => String(m || "capital-mc").split("-")[0];
+    history = history.filter((h) => subjectOf(h.mode) === subjectOf(s.mode) && (h.total || 0) > 0);
     const byTime = [...history].sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)));
     const recent3 = byTime.slice(-3);            // 오래된 → 최신
     const latest = recent3[recent3.length - 1];  // 이번 시도
@@ -328,21 +537,167 @@
       const card = document.createElement("div");
       card.className = "hist" + (h === latest ? " current" : "");
       card.innerHTML =
-        `<div class="head"><span class="wk">${h.week}주차 <span class="when">${when}</span></span>` +
+        `<div class="head"><span class="wk">${h.week}주차 <span class="when">${(MODES[h.mode] || MODES["capital-mc"]).label.split(" · ")[1]} · ${when}</span></span>` +
         `<span class="sc">${h.score}/${h.total} <span class="pill ${wrongs.length ? "bad" : "ok"}">틀림 ${wrongs.length}</span></span></div>` +
         `<div class="body">` +
         (wrongs.length
-          ? `<ul>${wrongs.map((w) => `<li><b>${esc(w.country)}</b>${josa(w.country)} ${esc(w.answer)}</li>`).join("")}</ul>`
+          ? `<ul>${wrongs.map((w) => MODE.src === "capital"
+              ? `<li><b>${esc(w.country)}</b>${josa(w.country)} ${esc(w.answer)}</li>`
+              : `<li>${esc(w.country)} <b>→ ${esc(w.answer)}</b></li>`).join("")}</ul>`
           : `<p class="hint" style="margin:0">틀린 문항 없음</p>`) +
         `</div>`;
       list.appendChild(card);
     });
   }
 
+  // ---------- 자가진단 ----------
+  let DKEY = null, DITEMS = [];   // DITEMS: [{n, text, fkey}]
+  function buildDiag(key) {
+    DKEY = key;
+    const d = DIAG[key];
+    DITEMS = [];
+    d.factors.forEach((f) => f.items.forEach((t) => DITEMS.push({ n: DITEMS.length + 1, text: t, fkey: f.key })));
+    $("diag-who").textContent = `${student.section}분반 · ${student.name} · ${student.week}주차`;
+    $("diag-eyebrow").textContent = DIAG_LABEL[key] + " 진단";
+    $("diag-title").textContent = d.question;
+    $("diag-guide").textContent = d.guide;
+    $("d-total").textContent = DITEMS.length;
+    const body = $("diag-body");
+    body.innerHTML = "";
+    DITEMS.forEach((it, i) => {
+      const q = document.createElement("div");
+      q.className = "q dq";
+      q.id = "dq-" + i;
+      q.innerHTML =
+        `<div class="country qtext"><span class="qn">${it.n}.</span> ${esc(it.text)}</div>` +
+        `<div class="likert">` + [1, 2, 3, 4, 5].map((v) =>
+          `<label class="lk"><input type="radio" name="d${i}" value="${v}"><span><i class="dot"></i><i class="num">${v}</i></span></label>`).join("") + `</div>`;
+      body.appendChild(q);
+    });
+    dTried = false;
+    $("diag-err").hidden = true;
+    dProgress();
+  }
+  let dTried = false;
+  function dAnswered() { let n = 0; for (let i = 0; i < DITEMS.length; i++) if (document.querySelector(`input[name=d${i}]:checked`)) n++; return n; }
+  function dProgress() { const n = dAnswered(); $("d-answered").textContent = n; $("d-bar").style.width = (DITEMS.length ? n / DITEMS.length * 100 : 0) + "%"; }
+  $("diag-body").addEventListener("change", (e) => {
+    if (e.target.type !== "radio") return;
+    const box = e.target.closest(".q"); const was = box.classList.contains("missing");
+    box.classList.remove("missing"); dProgress();
+    if (dTried) {
+      const left = document.querySelectorAll("#diag-body .q.missing").length;
+      if (left === 0) $("diag-err").hidden = true;
+      else { $("diag-err").textContent = `아직 ${left}문항이 남았습니다.`; if (was) setTimeout(() => { const el = document.querySelector("#diag-body .q.missing"); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" }); }, 200); }
+    }
+  });
+  $("btn-back-d").addEventListener("click", () => {
+    if (dAnswered() > 0 && !confirm("지금까지 고른 답은 사라집니다. 처음 화면으로 돌아갈까요?")) return;
+    $("diag-body").innerHTML = ""; show("start");
+  });
+  $("diag-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    dTried = true;
+    let missing = 0; const answers = {}; const vals = [];
+    DITEMS.forEach((it, i) => {
+      const r = document.querySelector(`input[name=d${i}]:checked`); const box = $("dq-" + i);
+      if (!r) { box.classList.add("missing"); missing++; }
+      else { box.classList.remove("missing"); const v = parseInt(r.value, 10); answers[it.n + ". " + it.text] = v; vals.push({ it, v }); }
+    });
+    if (missing) {
+      $("diag-err").textContent = `아직 ${missing}문항이 남았습니다. 빨간 점선 문항을 채워 주세요.`; $("diag-err").hidden = false;
+      const el = document.querySelector("#diag-body .q.missing"); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    $("diag-err").hidden = true;
+    const d = DIAG[DKEY];
+    const scores = {}; let total = 0, max = 0;
+    d.factors.forEach((f) => { scores[f.key] = vals.filter((x) => x.it.fkey === f.key).reduce((a, x) => a + x.v, 0); total += scores[f.key]; max += f.items.length * 5; });
+    answers._factors = scores;
+    const attempt = Object.assign({}, student, { score: total, total: max, wrong: [], answers });
+    const btn = $("diag-submit"); btn.disabled = true; btn.textContent = "저장 중…";
+    let history = [], saveErr = null;
+    try { await window.QuizAPI.saveAttempt(attempt); history = await window.QuizAPI.getHistory(student.student_id, student.name); }
+    catch (ex) { saveErr = ex; console.error(ex); }
+    btn.disabled = false; btn.textContent = "제출하고 결과 보기";
+    renderDiagResult(attempt, vals, scores, history, saveErr);
+    show("dresult");
+  });
+
+  function renderDiagResult(attempt, vals, scores, history, saveErr) {
+    const d = DIAG[DKEY];
+    $("dr-eyebrow").textContent = `${attempt.week}주차 · ${DIAG_LABEL[DKEY]} 진단 결과`;
+    $("dr-title").textContent = d.question;
+    $("dr-who").textContent = `${attempt.section}분반 · ${attempt.student_id} · ${attempt.name}` + (saveErr ? " · 저장 실패" : window.QuizAPI.mode === "local" ? " · (연습 모드)" : "");
+    const avgs = {};
+    d.factors.forEach((f) => { avgs[f.key] = scores[f.key] / f.items.length; });
+    const r = d.interpret(scores, avgs);
+    $("dr-headline").textContent = r.headline;
+    const comp = $("dr-composite"); comp.innerHTML = "";
+    (r.composite || []).forEach((c) => {
+      comp.insertAdjacentHTML("beforeend",
+        `<div class="comp"><div class="comp-name">${esc(c.name)}</div><div class="comp-val">${c.value}<small>/${c.max}</small></div>` +
+        `<div class="meter"><i style="width:${(c.value / c.max * 100).toFixed(0)}%"></i></div></div>`);
+    });
+    $("dr-total").textContent = `총합 ${attempt.score} / ${attempt.total}점`;
+    const fl = $("dr-factors"); fl.innerHTML = "";
+    d.factors.forEach((f) => {
+      const v = scores[f.key], mx = f.items.length * 5, avg = v / f.items.length;
+      const note = d.factorNotes[f.key];
+      const level = avg >= 3.5 ? "high" : avg <= 2.5 ? "low" : "mid";
+      const comment = level === "high" ? note.high : level === "low" ? note.low : "";
+      // 이 요인 안에서 가장 높게 / 가장 낮게 답한 문항 (차이가 있을 때만)
+      const own = vals.filter((x) => x.it.fkey === f.key);
+      const mx2 = Math.max(...own.map((x) => x.v)), mn2 = Math.min(...own.map((x) => x.v));
+      const top = own.find((x) => x.v === mx2), bot = own.find((x) => x.v === mn2);
+      const spread = mx2 - mn2 >= 2
+        ? `<div class="fac-flag"><div class="ff-row"><span class="ff-tag high">가장 높게</span><span>${top.it.n}. ${esc(top.it.text)} <b>${mx2}점</b></span></div>` +
+          `<div class="ff-row"><span class="ff-tag low">가장 낮게</span><span>${bot.it.n}. ${esc(bot.it.text)} <b>${mn2}점</b></span></div></div>`
+        : `<div class="fac-flag"><span class="hint">이 묶음은 문항끼리 답이 비슷합니다 (모두 ${mn2}~${mx2}점).</span></div>`;
+      fl.insertAdjacentHTML("beforeend",
+        `<div class="fac ${level}">` +
+        `<div class="fac-head"><div><span class="fac-name">${esc(f.name)}</span><span class="fac-sub">${esc(f.sub)}</span></div>` +
+        `<div class="fac-score">${v}<small>/${mx}</small></div></div>` +
+        `<div class="meter"><i style="width:${(v / mx * 100).toFixed(0)}%"></i></div>` +
+        `<div class="fac-desc">${esc(note.desc)}</div>` +
+        (comment ? `<div class="fac-comment">${esc(comment)}</div>` : "") +
+        spread +
+        `</div>`);
+    });
+    // ---- 특히 눈여겨볼 문항 : 전체 문항에서 치우침(salience)이 큰 순서로 3개 ----
+    // salience = 부정 방향 문항이면 (점수-3), 긍정 방향 문항이면 (3-점수). 1 이상만 후보.
+    const negKey = {};
+    d.factors.forEach((f) => { negKey[f.key] = !!f.negative; });
+    const fname = {};
+    d.factors.forEach((f) => { fname[f.key] = f.name; });
+    const ranked = vals
+      .map((x) => ({ x, sal: negKey[x.it.fkey] ? x.v - 3 : 3 - x.v }))
+      .filter((o) => o.sal >= 1)
+      .sort((a, b) => b.sal - a.sal || a.x.it.n - b.x.it.n)
+      .slice(0, 3);
+    const fb = $("dr-focus");
+    if (!ranked.length) {
+      fb.innerHTML = `<p class="hint" style="margin:0">한쪽으로 크게 치우친 응답이 없습니다. 모든 문항에 고르게 답했다는 뜻입니다.</p>`;
+    } else {
+      fb.innerHTML =
+        `<p class="focus-why">낮아야 좋은 문항에 높게 답했거나, 높아야 좋은 문항에 낮게 답한 순서로 골랐습니다.</p>` +
+        `<ol class="focus-list">` + ranked.map((o) => {
+          const neg = negKey[o.x.it.fkey];
+          return `<li><div class="fo-q">${esc(o.x.it.text)}</div>` +
+            `<div class="fo-meta"><span class="pill ${neg ? "bad" : "ok"}">${esc(fname[o.x.it.fkey])}</span>` +
+            `<span class="hint">내 응답 ${o.x.v}점 · ${neg ? "낮을수록 좋은 문항" : "높을수록 좋은 문항"}</span></div></li>`;
+        }).join("") + `</ol>`;
+    }
+
+    const ln = $("dr-lines"); ln.innerHTML = r.lines.map((t) => `<p>${esc(t)}</p>`).join("");
+    $("dr-source").textContent = d.source;
+  }
+  $("btn-home-3").addEventListener("click", () => { $("start-form").reset(); show("start"); });
+
   // ---------- 격려 메시지 ----------
   const CHEERS = {
     perfect: [
-      "36개 전부 정답! 완벽해. 세계 수도는 이제 네 거야.",
+      "전부 정답! 완벽해. 오늘 배운 건 이제 네 거야.",
       "만점이라니! 정화예술인의 자부심, 오늘 네가 보여줬어.",
       "한 문제도 안 놓쳤네. 진짜 멋지다. 다음 주에도 이 기세 그대로!",
     ],
@@ -362,14 +717,14 @@
       "{now}점 지켰네. 여기서 딱 몇 개만 더! 할 수 있어.",
     ],
     down: [
-      "지난주에 맞춘 건 이미 네 안에 있어. 오늘 틀린 것만 한 번 더 보면 다음 주엔 다시 올라가. 넌 할 수 있어!",
-      "오늘도 36개 끝까지 다 풀었잖아. 그 끈기가 진짜 실력이야. 다음 주가 기대돼!",
+      "지난번에 맞춘 건 이미 네 안에 있어. 오늘 틀린 것만 한 번 더 보면 다음엔 다시 올라가. 넌 할 수 있어!",
+      "오늘도 끝까지 다 풀었잖아. 그 끈기가 진짜 실력이야. 다음 주가 기대돼!",
       "점수는 오르락내리락해도 외운 건 쌓이고 있어. 이번 주 틀린 것만 챙기면 돼. 응원할게!",
     ],
     first: [
       "첫 도전 {now}점! 시작이 반이야. 다음 주에 얼마나 오르는지 같이 보자.",
-      "첫 기록 남겼어. 수도송 한 번만 더 듣고 오면 다음엔 확 오를 거야. 할 수 있어!",
-      "36개 다 풀어낸 것부터 대단해. 여기서부터 올라가는 일만 남았어!",
+      "첫 기록 남겼어. {again} 다음엔 확 오를 거야. 할 수 있어!",
+      "끝까지 다 풀어낸 것부터 대단해. 여기서부터 올라가는 일만 남았어!",
     ],
   };
   function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
@@ -382,13 +737,23 @@
       d = s.score - prev.score;
       key = d >= 5 ? "bigUp" : d > 0 ? "up" : d === 0 ? "same" : "down";
     }
+    const again = MODE.src === "capital" ? "수도송 한 번만 더 듣고 오면" : "강의자료 한 번만 더 훑고 오면";
     const msg = pick(CHEERS[key])
+      .replace(/{again}/g, again)
       .replace(/{d}/g, Math.abs(d)).replace(/{now}/g, s.score).replace(/{prev}/g, prev ? prev.score : "");
     const el = $("cheer");
     el.className = "cheer " + key;
     el.innerHTML = `<div class="cheer-label">${esc(s.name)}에게</div><p>${esc(msg)}</p>`;
   }
 
+  // 퀴즈 화면 → 시작 화면 (입력한 분반·학번·이름은 그대로 두고 문제만 버림)
+  $("btn-back").addEventListener("click", () => {
+    if (answeredCount() > 0 && !confirm("지금까지 고른 답은 사라집니다. 처음 화면으로 돌아갈까요?")) return;
+    $("quiz-body").innerHTML = "";
+    $("quiz-err").hidden = true;
+    show("start");
+  });
+  $("btn-home-2").addEventListener("click", () => { $("start-form").reset(); show("start"); });
   $("btn-home").addEventListener("click", () => {
     $("start-form").reset();
     show("start");

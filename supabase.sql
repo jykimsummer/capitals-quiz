@@ -16,6 +16,7 @@ create table if not exists public.attempts (
   answers     jsonb       not null default '{}'::jsonb,  -- {country: chosen}
   created_at  timestamptz not null default now()
 );
+alter table public.attempts add column if not exists mode text not null default 'capital-mc';
 create index if not exists attempts_student_idx on public.attempts (student_id, week, created_at);
 
 -- 2) 관리자 설정 (익명 접근 불가)
