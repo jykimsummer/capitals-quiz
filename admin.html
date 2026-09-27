@@ -70,7 +70,7 @@
 
     <div class="kpi" id="kpi"></div>
 
-    <div class="section-title"><h2>학생별 주차별 점수</h2><span class="hint">위에서 고른 유형만 표시 · 같은 주차를 여러 번 풀면 마지막 점수 기준 · 행을 누르면 상세</span></div>
+    <div class="section-title"><h2>학생별 회차별 점수</h2><span class="hint">위에서 고른 유형만 표시 · 같은 날 여러 번 풀면 마지막 점수 기준 · 행을 누르면 상세</span></div>
     <div class="tbl-wrap"><table class="tbl" id="pivot"></table></div>
   </div>
 
@@ -113,8 +113,8 @@
   function fillSections() {
     const sel = $("f-section");
     const cur = sel.value;
-    const secs = [...new Set(rows.map((r) => r.section))].sort();
-    sel.innerHTML = `<option value="">전체</option>` + secs.map((s) => `<option value="${esc(s)}">${esc(s)}분반</option>`).join("");
+    const secs = [...new Set(rows.map((r) => r.section).filter(Boolean))].sort();
+    sel.innerHTML = `<option value="">전체</option>` + secs.map((x) => `<option value="${esc(x)}">${esc(x)}분반</option>`).join("");
     sel.value = cur;
   }
   $("f-section").addEventListener("change", render);
@@ -142,19 +142,26 @@
       (!q || (r.student_id + r.name).toLowerCase().includes(q)));
   }
 
-  // 학생 × 주차 피벗 (마지막 시도 기준)
+  // 학생 × 회차 피벗 (마지막 시도 기준)
+  // 예전 기록에는 주차가 들어 있고, 이제부터의 기록에는 없다 → 있으면 '5주차', 없으면 응시 날짜를 열로 쓴다
+  const colOf = (r) => (r.week ? r.week + "주차" : String(r.created_at).slice(5, 10).replace("-", "/"));
+  const colSortOf = (r) => (r.week ? "A" + String(r.week).padStart(3, "0") : "B" + String(r.created_at).slice(0, 10));
   function pivot(data) {
-    const weeks = [...new Set(data.map((r) => r.week))].sort((a, b) => a - b);
+    const colMap = new Map();
+    data.forEach((r) => { colMap.set(colOf(r), colSortOf(r)); });
+    const weeks = [...colMap.keys()].sort((a, b) => colMap.get(a).localeCompare(colMap.get(b)));
     const students = new Map();
     data.forEach((r) => {
-      const key = r.section + "|" + r.student_id;
-      if (!students.has(key)) students.set(key, { section: r.section, student_id: r.student_id, name: r.name, byWeek: {}, tries: {} });
+      const key = r.student_id + "|" + r.name;
+      if (!students.has(key)) students.set(key, { section: "", student_id: r.student_id, name: r.name, byWeek: {}, tries: {} });
       const st = students.get(key);
+      const c = colOf(r);
       st.name = r.name;
-      st.byWeek[r.week] = r;                        // 정렬 순서상 마지막 = 최신
-      st.tries[r.week] = (st.tries[r.week] || 0) + 1;
+      if (r.section) st.section = r.section;   // 가장 최근에 적힌 분반
+      st.byWeek[c] = r;                        // 정렬 순서상 마지막 = 최신
+      st.tries[c] = (st.tries[c] || 0) + 1;
     });
-    const list = [...students.values()].sort((a, b) => a.section.localeCompare(b.section) || a.student_id.localeCompare(b.student_id));
+    const list = [...students.values()].sort((a, b) => String(a.section).localeCompare(String(b.section)) || String(a.student_id).localeCompare(String(b.student_id)));
     return { weeks, list };
   }
 
@@ -164,21 +171,22 @@
     const total = (data[0] && data[0].total) || window.QUIZ_ITEMS.length;
 
     // KPI
-    const latestScores = list.map((s) => { const w = Math.max(...Object.keys(s.byWeek).map(Number)); return s.byWeek[w].score; });
+    const order = (s) => weeks.filter((w) => s.byWeek[w]);   // 표의 열 순서대로
+    const latestScores = list.map((s) => { const o = order(s); return s.byWeek[o[o.length - 1]].score; });
     const avg = latestScores.length ? (latestScores.reduce((a, b) => a + b, 0) / latestScores.length).toFixed(1) : "–";
     const perfect = latestScores.filter((x) => x === total).length;
     $("kpi").innerHTML =
       `<div><div class="l">학생 수</div><div class="v">${list.length}</div></div>` +
       `<div><div class="l">응답 수</div><div class="v">${data.length}</div></div>` +
-      `<div><div class="l">최근 주차 평균</div><div class="v">${avg}<span class="hint"> / ${total}</span></div></div>` +
-      `<div><div class="l">최근 주차 만점</div><div class="v">${perfect}</div></div>`;
+      `<div><div class="l">최근 회차 평균</div><div class="v">${avg}<span class="hint"> / ${total}</span></div></div>` +
+      `<div><div class="l">최근 회차 만점</div><div class="v">${perfect}</div></div>`;
 
     // 표
     const t = $("pivot");
     let html = `<thead><tr><th>분반</th><th>학번</th><th>이름</th>` +
-      weeks.map((w) => `<th class="num">${w}주차</th>`).join("") + `<th class="num">변화</th></tr></thead><tbody>`;
+      weeks.map((w) => `<th class="num">${esc(w)}</th>`).join("") + `<th class="num">변화</th></tr></thead><tbody>`;
     list.forEach((s, idx) => {
-      const ws = Object.keys(s.byWeek).map(Number).sort((a, b) => a - b);
+      const ws = order(s);
       const first = s.byWeek[ws[0]].score, last = s.byWeek[ws[ws.length - 1]].score;
       const d = ws.length > 1 ? last - first : null;
       html += `<tr class="stu" data-i="${idx}"><td>${esc(s.section)}</td><td>${esc(s.student_id)}</td><td>${esc(s.name)}</td>`;
@@ -195,7 +203,7 @@
       html += `<tr class="detail-row" hidden><td colspan="${4 + weeks.length}">` +
         ws.map((w) => {
           const wr = s.byWeek[w].wrong || [];
-          return `<div><span class="wk">${w}주차</span>${wr.length ? wr.map((x) => `${esc(x.country)}→${esc(x.answer)}<span class="hint">(${esc(x.chosen)})</span>`).join(", ") : "<span class='hint'>틀린 문항 없음</span>"}</div>`;
+          return `<div><span class="wk">${esc(w)}</span>${wr.length ? wr.map((x) => `${esc(x.country)}→${esc(x.answer)}<span class="hint">(${esc(x.chosen)})</span>`).join(", ") : "<span class='hint'>틀린 문항 없음</span>"}</div>`;
         }).join("") + `</td></tr>`;
     });
     html += `</tbody>`;
@@ -222,22 +230,22 @@
   }
   $("btn-csv-pivot").addEventListener("click", () => {
     const { weeks, list } = pivot(filtered());
-    const out = [["분반", "학번", "이름", ...weeks.map((w) => w + "주차"), ...weeks.map((w) => w + "주차 틀린문항")]];
+    const out = [["분반", "학번", "이름", ...weeks, ...weeks.map((w) => w + " 틀린문항")]];
     list.forEach((s) => out.push([
       s.section, s.student_id, s.name,
       ...weeks.map((w) => (s.byWeek[w] ? s.byWeek[w].score : "")),
       ...weeks.map((w) => (s.byWeek[w] ? (s.byWeek[w].wrong || []).map((x) => x.country).join(" ") : "")),
     ]));
-    download("수도퀴즈_주차별점수.csv", csv(out));
+    download("완전정복_회차별점수.csv", csv(out));
   });
   $("btn-csv-raw").addEventListener("click", () => {
-    const out = [["분반", "학번", "이름", "유형", "주차", "점수", "만점", "틀린문항", "제출시각"]];
+    const out = [["분반", "학번", "이름", "유형", "주차(예전 기록만)", "점수", "만점", "틀린문항", "제출시각"]];
     filtered().forEach((r) => out.push([
       r.section, r.student_id, r.name, MODE_LABEL[r.mode || "capital-mc"] || r.mode, r.week, r.score, r.total,
       (r.wrong || []).map((x) => `${x.country}(${x.chosen}→${x.answer})`).join(" "),
       new Date(r.created_at).toLocaleString("ko-KR"),
     ]));
-    download("수도퀴즈_전체응답.csv", csv(out));
+    download("완전정복_전체응답.csv", csv(out));
   });
 })();
 </script>

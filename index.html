@@ -20,23 +20,6 @@
     <form id="start-form" class="card stack" style="margin-top:22px" novalidate>
       <div class="grid-2">
         <div class="field">
-          <label for="section">분반</label>
-          <select id="section" name="section" required>
-            <option value="">선택</option>
-            <option value="1">1분반 (월 오전 10시~)</option>
-            <option value="2">2분반 (월 오후 1시~)</option>
-            <option value="3">3분반 (월 오후 4시~)</option>
-            <option value="4">4분반 (화 오전 10시~)</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="week">주차</label>
-          <input id="week" name="week" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2"
-                 placeholder="숫자만 입력 ex. 5" required autocomplete="off">
-        </div>
-      </div>
-      <div class="grid-2">
-        <div class="field">
           <label for="student_id">학번</label>
           <input id="student_id" name="student_id" placeholder="예: 20260102" required inputmode="numeric" autocomplete="off">
         </div>
@@ -86,7 +69,7 @@
       <p class="err" id="start-err" hidden></p>
       <div class="toolbar">
         <button class="btn" type="submit">퀴즈 및 진단 시작</button>
-        <span class="hint">학번과 이름은 이전 주차 기록을 찾는 데 쓰입니다. 매주 같은 학번을 입력하세요.</span>
+        <span class="hint">학번과 이름으로 지난 기록을 찾아 이어 줍니다. 매번 같은 학번과 이름을 입력하세요.</span>
       </div>
     </form>
   </section>
@@ -184,7 +167,7 @@
     <div class="all-correct" id="res-perfect" hidden>모든 문항을 맞혔습니다. 자랑스러운 정화예술인!</div>
 
     <div class="section-title">
-      <h2>주차별 누적 기록</h2>
+      <h2>나의 누적 기록</h2>
       <span class="hint" id="hist-hint"></span>
     </div>
     <div class="timeline" id="timeline"></div>
@@ -236,6 +219,8 @@
     Object.keys(views).forEach((k) => (views[k].hidden = k !== name));
     window.scrollTo({ top: 0 });
   }
+  const todayLabel = () => { const d = new Date(); return `${d.getMonth() + 1}월 ${d.getDate()}일`; };
+
   const josaGa = (w) => { const c = w.charCodeAt(w.length - 1); return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 ? "이" : "가"; };
   const josa = (w) => { const c = w.charCodeAt(w.length - 1); return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 ? "은" : "는"; };
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -256,24 +241,23 @@
     else if (r.value === "week6") $("week6-note").hidden = false;
   }));
 
-  let student = null;      // {section, student_id, name, week}
+  let student = null;      // {student_id, name, section} — 분반은 지난 기록에서 물려받고, 회차는 응시 날짜로 구분한다
   let triedSubmit = false; // 한 번이라도 제출을 눌렀는지
 
   // ---------- 시작 ----------
   $("start-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const f = e.target;
-    const week = parseInt(String(f.week.value).replace(/[^0-9]/g, ""), 10);
     const s = {
-      section: f.section.value,
+      section: "",
       student_id: f.student_id.value.trim(),
       name: f.name.value.trim(),
-      week: week,
+      week: null,
     };
     const err = $("start-err");
     const modeEl = document.querySelector('input[name="mode"]:checked');
-    if (!s.section || !s.student_id || !s.name || !week || week < 1) {
-      err.textContent = "분반, 주차, 학번, 이름을 모두 입력하세요.";
+    if (!s.student_id || !s.name) {
+      err.textContent = "학번과 이름을 입력하세요.";
       err.hidden = false;
       return;
     }
@@ -283,6 +267,16 @@
       err.hidden = false;
       return;
     }
+    // 학번+이름으로 지난 기록을 먼저 찾아 둔다. 분반은 예전 기록에 적힌 것을 그대로 물려받는다.
+    err.hidden = true;
+    const btn = f.querySelector('button[type="submit"]');
+    btn.disabled = true; btn.textContent = "지난 기록 찾는 중…";
+    let hist = [];
+    try { hist = await window.QuizAPI.getHistory(s.student_id, s.name); }
+    catch (ex) { console.error(ex); }
+    btn.disabled = false; btn.textContent = "퀴즈 및 진단 시작";
+    const withSec = hist.filter((h) => h.section).sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)));
+    if (withSec.length) s.section = withSec[withSec.length - 1].section;
     if (subj.value === "week6") {
       err.hidden = true;
       s.mode = "efficacy";
@@ -317,24 +311,18 @@
     triedSubmit = false;
     prevTheory = null;
     if (MODE.src === "theory") {
-      const btn = f.querySelector('button[type="submit"]');
-      btn.disabled = true; btn.textContent = "불러오는 중…";
-      try {
-        const hist = await window.QuizAPI.getHistory(s.student_id, s.name);
-        const past = hist.filter((h) => String(h.mode || "").startsWith("theory-"))
-          .sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)));
-        const last = past[past.length - 1];
-        if (last && last.answers) {
-          prevTheory = {
-            asked: new Set(Object.keys(last.answers)),
-            wrong: new Set((last.wrong || []).map((w) => w.country)),
-          };
-        }
-      } catch (ex) { console.error(ex); }
-      btn.disabled = false; btn.textContent = "퀴즈 및 진단 시작";
+      const past = hist.filter((h) => String(h.mode || "").startsWith("theory-"))
+        .sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)));
+      const last = past[past.length - 1];
+      if (last && last.answers) {
+        prevTheory = {
+          asked: new Set(Object.keys(last.answers)),
+          wrong: new Set((last.wrong || []).map((w) => w.country)),
+        };
+      }
     }
     buildQuiz();
-    $("quiz-who").textContent = `${s.section}분반 · ${s.name} · ${s.week}주차 · ${MODE.label}`;
+    $("quiz-who").textContent = `${s.name} · ${MODE.label}`;
     show("quiz");
   });
 
@@ -379,7 +367,7 @@
     const freshFirst = (arr) =>
       shuffle(arr.filter((it) => !asked.has(it.q))).concat(shuffle(arr.filter((it) => asked.has(it.q))));
 
-    // ① 입력한 주차의 문항을 최소 THEORY_WEEK_MIN개 보장 (6주차 → 자기효능감)
+    // ① (예전 방식) 주차가 지정된 경우에만 그 주차 문항을 최소 THEORY_WEEK_MIN개 보장
     const weekItems = bank.filter((it) => it.week === student.week);
     if (weekItems.length) add(freshFirst(weekItems), THEORY_WEEK_MIN);
 
@@ -550,8 +538,8 @@
   function renderEssay(attempt, saveErr) {
     $("res-graded").hidden = true;
     $("res-essay").hidden = false;
-    $("res-eyebrow").textContent = `${attempt.week}주차 · ${MODE.label}`;
-    $("essay-who").textContent = `${attempt.section}분반 · ${attempt.student_id} · ${attempt.name}` +
+    $("res-eyebrow").textContent = `${todayLabel()} · ${MODE.label}`;
+    $("essay-who").textContent = `${attempt.student_id} · ${attempt.name}` +
       (saveErr ? " · 저장에 실패했습니다" : window.QuizAPI.mode === "local" ? " · (연습 모드)" : " · 제출 완료");
     const ol = $("essay-list");
     ol.innerHTML = "";
@@ -570,10 +558,10 @@
     $("res-graded").hidden = false;
     $("res-essay").hidden = true;
     const s = attempt;
-    $("res-eyebrow").textContent = `${s.week}주차 결과 · ${MODE.label}`;
+    $("res-eyebrow").textContent = `${todayLabel()} 결과 · ${MODE.label}`;
     $("res-score").textContent = s.score;
     $("res-total").textContent = ` / ${s.total}점`;
-    $("res-who").textContent = `${s.section}분반 · ${s.student_id} · ${s.name}`;
+    $("res-who").textContent = `${s.student_id} · ${s.name}`;
 
     const ul = $("res-wrong");
     ul.innerHTML = "";
@@ -605,6 +593,7 @@
     const subjectOf = (m) => String(m || "capital-mc").split("-")[0];
     history = history.filter((h) => subjectOf(h.mode) === subjectOf(s.mode) && (h.total || 0) > 0);
     const byTime = [...history].sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)));
+    byTime.forEach((h, i) => { h._try = i + 1; });   // 1회차, 2회차… 도전 순서
     const recent3 = byTime.slice(-3);            // 오래된 → 최신
     const latest = recent3[recent3.length - 1];  // 이번 시도
 
@@ -619,7 +608,7 @@
       }
       const it = document.createElement("div");
       it.className = "tl-item" + (h === latest ? " now" : "");
-      it.innerHTML = `<div class="wk">${h.week}주차</div><div class="sc">${h.score}<span style="font-size:.85rem;color:var(--muted)">/${h.total}</span></div>`;
+      it.innerHTML = `<div class="wk">${h._try}회차</div><div class="sc">${h.score}<span style="font-size:.85rem;color:var(--muted)">/${h.total}</span></div>`;
       tl.appendChild(it);
     });
 
@@ -632,7 +621,7 @@
       const card = document.createElement("div");
       card.className = "hist" + (h === latest ? " current" : "");
       card.innerHTML =
-        `<div class="head"><span class="wk">${h.week}주차 <span class="when">${(MODES[h.mode] || MODES["capital-mc"]).label.split(" · ")[1]} · ${when}</span></span>` +
+        `<div class="head"><span class="wk">${h._try}회차 도전 <span class="when">${(MODES[h.mode] || MODES["capital-mc"]).label.split(" · ")[1]} · ${when}</span></span>` +
         `<span class="sc">${h.score}/${h.total} <span class="pill ${wrongs.length ? "bad" : "ok"}">틀림 ${wrongs.length}</span></span></div>` +
         `<div class="body">` +
         (wrongs.length
@@ -652,7 +641,7 @@
     const d = DIAG[key];
     DITEMS = [];
     d.factors.forEach((f) => f.items.forEach((t) => DITEMS.push({ n: DITEMS.length + 1, text: t, fkey: f.key })));
-    $("diag-who").textContent = `${student.section}분반 · ${student.name} · ${student.week}주차`;
+    $("diag-who").textContent = `${student.name}`;
     $("diag-eyebrow").textContent = DIAG_LABEL[key] + " 진단";
     $("diag-title").textContent = d.question;
     $("diag-guide").textContent = d.guide;
@@ -721,9 +710,9 @@
 
   function renderDiagResult(attempt, vals, scores, history, saveErr) {
     const d = DIAG[DKEY];
-    $("dr-eyebrow").textContent = `${attempt.week}주차 · ${DIAG_LABEL[DKEY]} 진단 결과`;
+    $("dr-eyebrow").textContent = `${todayLabel()} · ${DIAG_LABEL[DKEY]} 진단 결과`;
     $("dr-title").textContent = d.question;
-    $("dr-who").textContent = `${attempt.section}분반 · ${attempt.student_id} · ${attempt.name}` + (saveErr ? " · 저장 실패" : window.QuizAPI.mode === "local" ? " · (연습 모드)" : "");
+    $("dr-who").textContent = `${attempt.student_id} · ${attempt.name}` + (saveErr ? " · 저장 실패" : window.QuizAPI.mode === "local" ? " · (연습 모드)" : "");
     const avgs = {};
     d.factors.forEach((f) => { avgs[f.key] = scores[f.key] / f.items.length; });
     const r = d.interpret(scores, avgs);
@@ -847,7 +836,7 @@
     el.innerHTML = `<div class="cheer-label">${esc(s.name)}에게</div><p>${esc(msg)}</p>`;
   }
 
-  // 퀴즈 화면 → 시작 화면 (입력한 분반·학번·이름은 그대로 두고 문제만 버림)
+  // 퀴즈 화면 → 시작 화면 (입력한 학번·이름은 그대로 두고 문제만 버림)
   $("btn-back").addEventListener("click", () => {
     if (answeredCount() > 0 && !confirm("지금까지 고른 답은 사라집니다. 처음 화면으로 돌아갈까요?")) return;
     $("quiz-body").innerHTML = "";
