@@ -159,7 +159,8 @@ h2 { font-size: clamp(1.15rem, 4.5vw, 1.35rem); }
 /* 과목·모드 선택 */
 .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .seg-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 8px; }
-.seg-3 .seg-item span { font-size: 0.92rem; }
+.seg-3 .seg-item span { font-size: clamp(0.8rem, 3.3vw, 0.95rem); word-break: keep-all; }
+#subject-seg { margin-top: 0; }
 .seg-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 @media (max-width: 560px) { .seg-4 { grid-template-columns: 1fr 1fr; } }
 .seg-item { position: relative; min-width: 0; }
@@ -253,18 +254,19 @@ h2 { font-size: clamp(1.15rem, 4.5vw, 1.35rem); }
 .fac-desc { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
 .fac-comment { margin-top: 10px; padding: 10px 12px; background: var(--paper); border-left: 4px solid var(--sea); border-radius: 6px; font-size: 0.93rem; line-height: 1.55; }
 .fac.low .fac-comment { border-left-color: var(--accent); }
-.fac-flag { margin-top: 10px; font-size: 0.88rem; display: grid; gap: 5px; }
-.ff-row { display: flex; gap: 8px; align-items: baseline; }
-.ff-tag { flex: none; font-size: 0.72rem; font-weight: 700; letter-spacing: .04em; padding: 2px 7px; border-radius: 99px; }
-.ff-tag.high { background: var(--stamp-soft); color: var(--stamp); }
-.ff-tag.low { background: var(--paper-2); color: var(--ink-soft); }
-/* 특히 눈여겨볼 문항 */
-.focus-box { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
-.focus-why { margin: 0 0 10px; font-size: 0.85rem; color: var(--muted); }
-.focus-list { margin: 0; padding-left: 20px; display: grid; gap: 12px; }
-.focus-list li::marker { color: var(--stamp); font-weight: 700; }
-.fo-q { font-family: var(--font-display); font-size: 1.05rem; line-height: 1.4; }
-.fo-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 4px; }
+.fac.mid .fac-comment { border-left-color: var(--ink-soft); }
+.insight { display: grid; gap: 12px; }
+.ins { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; border-left: 4px solid var(--line); }
+.ins.strong { border-left-color: var(--sea); }
+.ins.weak { border-left-color: var(--stamp); }
+.ins-head { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; }
+.ins-head b { font-family: var(--font-display); font-size: 1.05rem; }
+.ins-say { margin: 8px 0 0; font-size: 0.94rem; line-height: 1.65; word-break: keep-all; }
+.ins-items { margin: 10px 0 0; padding-left: 18px; display: grid; gap: 8px; }
+.ins-items li::marker { color: var(--ink-soft); }
+.ins-q { display: block; line-height: 1.45; word-break: keep-all; }
+.ins-meta { display: block; margin-top: 2px; font-size: 0.82rem; color: var(--muted); }
+@media (min-width: 720px) { .insight { grid-template-columns: 1fr 1fr; align-items: start; } }
 .dr-lines p { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin: 0 0 8px; line-height: 1.6; }
 
 /* 격려 메시지 */
