@@ -144,8 +144,11 @@
 
   // 학생 × 회차 피벗 (마지막 시도 기준)
   // 예전 기록에는 주차가 들어 있고, 이제부터의 기록에는 없다 → 있으면 '5주차', 없으면 응시 날짜를 열로 쓴다
-  const colOf = (r) => (r.week ? r.week + "주차" : String(r.created_at).slice(5, 10).replace("-", "/"));
-  const colSortOf = (r) => (r.week ? "A" + String(r.week).padStart(3, "0") : "B" + String(r.created_at).slice(0, 10));
+  // 날짜는 브라우저(한국) 시간 기준. created_at 문자열을 그대로 자르면 UTC라 오전 9시 이전 응시가 전날로 밀린다.
+  const ymd = (iso) => { const d = new Date(iso); const p = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; };
+  const colOf = (r) => (r.week ? r.week + "주차" : ymd(r.created_at).slice(5).replace("-", "/"));
+  const colSortOf = (r) => (r.week ? "A" + String(r.week).padStart(3, "0") : "B" + ymd(r.created_at));
   function pivot(data) {
     const colMap = new Map();
     data.forEach((r) => { colMap.set(colOf(r), colSortOf(r)); });
@@ -241,7 +244,7 @@
   $("btn-csv-raw").addEventListener("click", () => {
     const out = [["분반", "학번", "이름", "유형", "주차(예전 기록만)", "점수", "만점", "틀린문항", "제출시각"]];
     filtered().forEach((r) => out.push([
-      r.section, r.student_id, r.name, MODE_LABEL[r.mode || "capital-mc"] || r.mode, r.week, r.score, r.total,
+      r.section, r.student_id, r.name, MODE_LABEL[r.mode || "capital-mc"] || r.mode, r.week || "", r.score, r.total,
       (r.wrong || []).map((x) => `${x.country}(${x.chosen}→${x.answer})`).join(" "),
       new Date(r.created_at).toLocaleString("ko-KR"),
     ]));

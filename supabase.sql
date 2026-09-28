@@ -9,7 +9,7 @@ create table if not exists public.attempts (
   section     text        not null,   -- 분반
   student_id  text        not null,   -- 학번
   name        text        not null,   -- 이름
-  week        integer     not null,   -- 주차
+  week        integer     not null default 0,  -- (예전 기록용) 주차
   score       integer     not null,   -- 맞힌 개수
   total       integer     not null,   -- 문항 수
   wrong       jsonb       not null default '[]'::jsonb,  -- [{country, answer, chosen}]

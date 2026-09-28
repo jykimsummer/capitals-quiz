@@ -60,9 +60,10 @@
         return rest("rpc/admin_attempts", { p_password: password });
       }
       if (password !== "jeonghwa2026") throw new Error("wrong password");
+      const S = (x) => String(x == null ? "" : x);
       return lsAll().sort((a, b) =>
-        a.section.localeCompare(b.section) || a.student_id.localeCompare(b.student_id) ||
-        a.week - b.week || a.created_at.localeCompare(b.created_at));
+        S(a.section).localeCompare(S(b.section)) || S(a.student_id).localeCompare(S(b.student_id)) ||
+        (a.week || 0) - (b.week || 0) || S(a.created_at).localeCompare(S(b.created_at)));
     },
   };
 })();
