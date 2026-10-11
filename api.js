@@ -57,7 +57,19 @@
 
     async adminAttempts(password) {
       if (useSupabase) {
-        return rest("rpc/admin_attempts", { p_password: password });
+        // Supabase는 한 번에 최대 1000행만 돌려준다. 끝까지 나눠 받는다.
+        const PAGE = 1000;
+        const out = [];
+        for (let offset = 0; offset < 200000; offset += PAGE) {
+          const part = await rest(
+            "rpc/admin_attempts?limit=" + PAGE + "&offset=" + offset,
+            { p_password: password }
+          );
+          if (!Array.isArray(part) || part.length === 0) break;
+          for (const r of part) out.push(r);
+          if (part.length < PAGE) break;
+        }
+        return out;
       }
       if (password !== "jeonghwa2026") throw new Error("wrong password");
       const S = (x) => String(x == null ? "" : x);
