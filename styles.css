@@ -159,8 +159,7 @@ h2 { font-size: clamp(1.15rem, 4.5vw, 1.35rem); }
 /* 과목·모드 선택 */
 .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .seg-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 8px; }
-.seg-3 .seg-item span { font-size: clamp(0.8rem, 3.3vw, 0.95rem); word-break: keep-all; }
-#subject-seg { margin-top: 0; }
+.seg-3 .seg-item span { font-size: 0.92rem; }
 .seg-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 @media (max-width: 560px) { .seg-4 { grid-template-columns: 1fr 1fr; } }
 .seg-item { position: relative; min-width: 0; }
@@ -254,19 +253,18 @@ h2 { font-size: clamp(1.15rem, 4.5vw, 1.35rem); }
 .fac-desc { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
 .fac-comment { margin-top: 10px; padding: 10px 12px; background: var(--paper); border-left: 4px solid var(--sea); border-radius: 6px; font-size: 0.93rem; line-height: 1.55; }
 .fac.low .fac-comment { border-left-color: var(--accent); }
-.fac.mid .fac-comment { border-left-color: var(--ink-soft); }
-.insight { display: grid; gap: 12px; }
-.ins { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; border-left: 4px solid var(--line); }
-.ins.strong { border-left-color: var(--sea); }
-.ins.weak { border-left-color: var(--stamp); }
-.ins-head { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; }
-.ins-head b { font-family: var(--font-display); font-size: 1.05rem; }
-.ins-say { margin: 8px 0 0; font-size: 0.94rem; line-height: 1.65; word-break: keep-all; }
-.ins-items { margin: 10px 0 0; padding-left: 18px; display: grid; gap: 8px; }
-.ins-items li::marker { color: var(--ink-soft); }
-.ins-q { display: block; line-height: 1.45; word-break: keep-all; }
-.ins-meta { display: block; margin-top: 2px; font-size: 0.82rem; color: var(--muted); }
-@media (min-width: 720px) { .insight { grid-template-columns: 1fr 1fr; align-items: start; } }
+.fac-flag { margin-top: 10px; font-size: 0.88rem; display: grid; gap: 5px; }
+.ff-row { display: flex; gap: 8px; align-items: baseline; }
+.ff-tag { flex: none; font-size: 0.72rem; font-weight: 700; letter-spacing: .04em; padding: 2px 7px; border-radius: 99px; }
+.ff-tag.high { background: var(--stamp-soft); color: var(--stamp); }
+.ff-tag.low { background: var(--paper-2); color: var(--ink-soft); }
+/* 특히 눈여겨볼 문항 */
+.focus-box { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.focus-why { margin: 0 0 10px; font-size: 0.85rem; color: var(--muted); }
+.focus-list { margin: 0; padding-left: 20px; display: grid; gap: 12px; }
+.focus-list li::marker { color: var(--stamp); font-weight: 700; }
+.fo-q { font-family: var(--font-display); font-size: 1.05rem; line-height: 1.4; }
+.fo-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 4px; }
 .dr-lines p { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin: 0 0 8px; line-height: 1.6; }
 
 /* 격려 메시지 */
@@ -294,3 +292,183 @@ table.tbl { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
 footer { margin-top: 40px; color: var(--muted); font-size: 0.8rem; text-align: center; }
 [hidden] { display: none !important; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+
+/* ===================== 가고 싶은 나라 찾기 ===================== */
+
+/* --- 문항 화면 (한 문항씩) --- */
+.cq-card {
+  background: #fff; border: 1px solid var(--line); border-radius: 20px;
+  padding: clamp(22px, 6vw, 34px) clamp(18px, 5vw, 30px);
+  margin-top: 18px; box-shadow: 0 10px 30px rgba(30,47,77,.07);
+  animation: cqIn .28s ease both;
+}
+@keyframes cqIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.cq-num {
+  display: inline-block; font-size: .74rem; font-weight: 700; letter-spacing: .12em;
+  color: #fff; background: linear-gradient(135deg, #f72585, #ff9770);
+  padding: 5px 12px; border-radius: 999px; margin-bottom: 14px;
+}
+.cq-q {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(1.25rem, 5.2vw, 1.6rem); line-height: 1.35; color: var(--ink);
+  text-wrap: balance;
+}
+.cq-opts { display: grid; gap: 10px; margin-top: 20px; }
+.cq-opts.yn { grid-template-columns: 1fr 1fr; }
+@media (max-width: 420px) { .cq-opts.yn { grid-template-columns: 1fr; } }
+.cq-opt {
+  font: inherit; text-align: left; cursor: pointer;
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 16px 18px; border-radius: 14px;
+  border: 2px solid var(--line); background: var(--paper);
+  color: var(--ink); transition: transform .12s ease, border-color .12s ease, background .12s ease;
+  min-height: 60px; justify-content: center;
+}
+.cq-opt:hover { border-color: #f72585; background: #fff; transform: translateY(-2px); }
+.cq-opt:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.cq-opt.on {
+  background: linear-gradient(135deg, #f72585, #ff9770); border-color: transparent; color: #fff;
+  box-shadow: 0 8px 20px rgba(247,37,133,.3);
+}
+.cq-opt-t { font-weight: 700; font-size: 1.04rem; }
+.cq-opt-s { font-size: .82rem; color: var(--muted); }
+.cq-opt.on .cq-opt-s { color: rgba(255,255,255,.85); }
+.cq-nav { display: flex; align-items: center; gap: 14px; margin-top: 20px; flex-wrap: wrap; }
+.cq-nav .btn { min-width: 120px; }
+.cq-nav .btn[disabled] { opacity: .35; cursor: default; }
+@media (max-width: 600px) { .cq-nav .btn { width: auto; min-height: 48px; font-size: 1rem; } }
+
+/* --- 결과: 머리글 --- */
+.cr-hero {
+  position: relative; overflow: hidden; border-radius: 22px;
+  padding: clamp(28px, 8vw, 46px) clamp(20px, 6vw, 34px);
+  margin-bottom: 22px; color: #fff; isolation: isolate;
+  background: linear-gradient(120deg, #7209b7, #f72585 42%, #ff9770 72%, #ffd166);
+  background-size: 300% 300%; animation: crSky 14s ease infinite;
+  box-shadow: 0 16px 40px rgba(114,9,183,.28);
+}
+@keyframes crSky { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+.cr-sky {
+  position: absolute; inset: 0; z-index: -1; opacity: .35;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(255,255,255,.9) 0 2px, transparent 3px),
+    radial-gradient(circle at 72% 14%, rgba(255,255,255,.8) 0 2px, transparent 3px),
+    radial-gradient(circle at 88% 62%, rgba(255,255,255,.7) 0 2px, transparent 3px),
+    radial-gradient(circle at 34% 78%, rgba(255,255,255,.75) 0 2px, transparent 3px),
+    radial-gradient(circle at 56% 44%, rgba(255,255,255,.6) 0 1.5px, transparent 3px);
+}
+.cr-plane { font-size: 2.2rem; line-height: 1; animation: crFly 3.2s ease-in-out infinite; }
+@keyframes crFly { 0%,100% { transform: translate(0,0) rotate(-6deg); } 50% { transform: translate(10px,-8px) rotate(2deg); } }
+.cr-eyebrow {
+  font-size: .76rem; letter-spacing: .16em; font-weight: 700;
+  color: rgba(255,255,255,.85); margin: 10px 0 6px;
+}
+.cr-hero h2 { font-size: clamp(1.5rem, 6.4vw, 2.1rem); color: #fff; }
+.cr-who { margin: 8px 0 0; color: rgba(255,255,255,.88); font-size: .92rem; }
+
+/* --- 결과: 나라 카드 --- */
+.cr-cards { display: grid; gap: 18px; }
+.cr-card {
+  border-radius: 20px; overflow: hidden; background: #fff;
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 28px rgba(30,47,77,.1);
+  animation: crIn .4s ease both;
+}
+.cr-card.r0 { animation-delay: .02s; }
+.cr-card.r1 { animation-delay: .1s; }
+.cr-card.r2 { animation-delay: .18s; }
+.cr-card.r3 { animation-delay: .26s; }
+@keyframes crIn { from { opacity: 0; transform: translateY(16px) scale(.98); } to { opacity: 1; transform: none; } }
+.cr-band {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 18px 20px; color: #fff;
+  background: linear-gradient(120deg, var(--c1), var(--c2));
+}
+.cr-rank {
+  font-size: .72rem; font-weight: 700; letter-spacing: .1em;
+  background: rgba(255,255,255,.26); border: 1px solid rgba(255,255,255,.45);
+  padding: 5px 10px; border-radius: 999px; backdrop-filter: blur(2px);
+}
+/* 윈도우 크롬·엣지는 국기 이모지를 글자(KR, JP…)로 보여 준다. 국기 전용 웹폰트로 덮어쓴다 */
+@font-face {
+  font-family: "Twemoji Country Flags";
+  unicode-range: U+1F1E6-1F1FF, U+1F3F4, U+E0062-E007F;
+  src: url("https://cdn.jsdelivr.net/npm/country-flag-emoji-polyfill@0.1.8/dist/TwemojiCountryFlags.woff2") format("woff2");
+  font-display: swap;
+}
+.cr-flag {
+  font-family: "Twemoji Country Flags", "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: 58px; height: 58px; border-radius: 15px; font-size: 2.1rem; line-height: 1;
+  background: rgba(255,255,255,.94); border: 1px solid rgba(0,0,0,.08);
+  box-shadow: 0 4px 12px rgba(0,0,0,.18);
+}
+.cr-name { display: flex; flex-direction: column; min-width: 0; flex: 1 1 auto; }
+.cr-name b { font-family: var(--font-display); font-size: 1.45rem; line-height: 1.2; }
+.cr-name i { font-style: normal; font-size: .84rem; color: rgba(255,255,255,.88); }
+.cr-pct { display: flex; align-items: baseline; gap: 1px; margin-left: auto; }
+.cr-pct b { font-size: 2rem; font-family: var(--font-display); line-height: 1; }
+.cr-pct small { font-size: .8rem; opacity: .85; }
+.cr-body { padding: 16px 20px 20px; display: grid; gap: 12px; }
+.cr-row { display: flex; gap: 11px; align-items: flex-start; }
+.cr-ico { font-size: 1.15rem; line-height: 1.4; flex: none; }
+.cr-row b { display: block; font-size: .78rem; letter-spacing: .06em; color: var(--muted); font-weight: 700; }
+.cr-row p { margin: 1px 0 0; font-size: .97rem; color: var(--ink); line-height: 1.5; }
+.cr-why { border-top: 1px dashed var(--line); padding-top: 12px; }
+.cr-why > b { display: block; font-size: .78rem; letter-spacing: .06em; color: var(--muted); margin-bottom: 8px; }
+.cr-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.cr-tag {
+  font-size: .82rem; font-weight: 600; padding: 5px 11px; border-radius: 999px;
+  color: var(--c1); background: color-mix(in srgb, var(--c1) 12%, #fff);
+  border: 1px solid color-mix(in srgb, var(--c1) 28%, #fff);
+}
+@supports not (color: color-mix(in srgb, red 10%, white)) {
+  .cr-tag { color: var(--ink); background: var(--paper-2); border-color: var(--line); }
+}
+
+/* --- 결과: 내가 고른 답 --- */
+.cr-recap { display: grid; gap: 6px; }
+.cr-ans {
+  display: flex; gap: 12px; align-items: baseline; justify-content: space-between;
+  padding: 9px 13px; border-radius: 10px; background: #fff; border: 1px solid var(--line);
+}
+.cr-ans-q { font-size: .9rem; color: var(--ink-soft); min-width: 0; }
+.cr-ans-a { font-size: .9rem; font-weight: 700; color: var(--stamp); white-space: nowrap; }
+.cr-tools { display: flex; gap: 10px; margin-top: 24px; }
+@media (max-width: 600px) { .cr-tools { flex-direction: column; } }
+
+/* 한 페이지에 15문항을 깔 때의 간격·미응답 표시 */
+.cq-card { margin-top: 14px; animation: none; }
+.cq-card.missing { border: 2px dashed var(--stamp); background: #fffaf8; }
+.cq-card .cq-q { font-size: clamp(1.1rem, 4.4vw, 1.35rem); }
+#cq-stage .cq-card:first-child { margin-top: 4px; }
+
+/* 나라찾기는 주차·학번을 묻지 않는다 */
+#start-form.no-id #f-week, #start-form.no-id #f-sid { display: none; }
+#start-form.no-id .grid-2 { grid-template-columns: 1fr; }
+
+/* --- 1순위 나라의 관광지 사진 --- */
+.cr-photos {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  padding: 10px; background: linear-gradient(120deg, var(--c1), var(--c2));
+}
+.cr-ph { margin: 0; min-width: 0; }
+.cr-ph:first-child { grid-column: 1 / -1; }
+.cr-ph-img {
+  position: relative; overflow: hidden; border-radius: 12px;
+  aspect-ratio: 16 / 10; background: rgba(255,255,255,.22);
+  display: flex; align-items: center; justify-content: center;
+}
+.cr-ph:first-child .cr-ph-img { aspect-ratio: 16 / 9; }
+/* 사진이 오기 전·못 불러왔을 때 보이는 자리 */
+.cr-ph-img > span {
+  padding: 0 10px; text-align: center; font-size: .82rem; font-weight: 700;
+  color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,.35);
+}
+.cr-ph-img img { width: 100%; height: 100%; object-fit: cover; display: block; animation: phIn .35s ease both; }
+@keyframes phIn { from { opacity: 0; } to { opacity: 1; } }
+.cr-ph figcaption {
+  margin-top: 5px; font-size: .78rem; font-weight: 600; color: #fff;
+  text-align: center; text-shadow: 0 1px 4px rgba(0,0,0,.3);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}

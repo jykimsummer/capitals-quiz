@@ -20,6 +20,23 @@
     <form id="start-form" class="card stack" style="margin-top:22px" novalidate>
       <div class="grid-2">
         <div class="field">
+          <label for="section">분반</label>
+          <select id="section" name="section" required>
+            <option value="">선택</option>
+            <option value="1">1분반 (월 오전 10시~)</option>
+            <option value="2">2분반 (월 오후 1시~)</option>
+            <option value="3">3분반 (월 오후 4시~)</option>
+            <option value="4">4분반 (화 오전 10시~)</option>
+          </select>
+        </div>
+        <div class="field" id="f-week">
+          <label for="week">주차</label>
+          <input id="week" name="week" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2"
+                 placeholder="숫자만 입력 ex. 5" required autocomplete="off">
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field" id="f-sid">
           <label for="student_id">학번</label>
           <input id="student_id" name="student_id" placeholder="예: 20260102" required inputmode="numeric" autocomplete="off">
         </div>
@@ -30,26 +47,21 @@
       </div>
       <div class="field">
         <label>무엇을 풀까요?</label>
-        <div class="seg seg-4" id="subject-seg">
+        <div class="seg" id="subject-seg">
           <label class="seg-item"><input type="radio" name="subject" value="capital"><span>세계수도송</span></label>
           <label class="seg-item"><input type="radio" name="subject" value="theory"><span>수업이론</span></label>
-          <label class="seg-item"><input type="radio" name="subject" value="week5"><span>5주차 학습내용</span></label>
-          <label class="seg-item"><input type="radio" name="subject" value="week6"><span>6주차 · 자기효능감</span></label>
         </div>
-      </div>
-      <div class="field" id="mode-week5" hidden>
-        <label>5주차 학습내용 · 자가진단</label>
-        <div class="seg seg-3">
-          <label class="seg-item"><input type="radio" name="diag" value="motivation"><span>학습동기 유형<small>20문항</small></span></label>
-          <label class="seg-item"><input type="radio" name="diag" value="style"><span>학습스타일<small>24문항</small></span></label>
-          <label class="seg-item"><input type="radio" name="diag" value="mindset"><span>마인드셋<small>12문항</small></span></label>
+        <div class="seg seg-3" id="subject-seg-2">
+          <label class="seg-item"><input type="radio" name="subject" value="motivation"><span>학습동기 유형<small>20문항 · 진단</small></span></label>
+          <label class="seg-item"><input type="radio" name="subject" value="style"><span>학습스타일<small>12문항 · 진단</small></span></label>
+          <label class="seg-item"><input type="radio" name="subject" value="mindset"><span>마인드셋<small>12문항 · 진단</small></span></label>
         </div>
-        <p class="hint" style="margin-top:8px">등급이 아니라 지금 내 위치를 찍는 자가진단입니다. 5점 척도로 솔직하게 답하면 결과와 코멘트가 나옵니다.</p>
+        <div class="seg" id="subject-seg-3" style="grid-template-columns:1fr;margin-top:8px">
+          <label class="seg-item"><input type="radio" name="subject" value="country"><span>🌍 가고 싶은 나라 찾기<small>15문항 · 나에게 맞는 나라 4곳</small></span></label>
+        </div>
+        <p class="hint" id="subject-soon" hidden>등급이 아니라 지금 내 위치를 찍는 자가진단입니다. 5점 척도로 솔직하게 답하면 결과와 코멘트가 나옵니다.</p>
+        <p class="hint" id="subject-country" hidden>점수가 없는 활동입니다. 15문항에 답하면 나와 가장 잘 맞는 나라 4곳을 수도·국기·음식·관광지·비행시간과 함께 알려 줍니다. 주차·학번은 받지 않습니다.</p>
       </div>
-      <p class="hint" id="week6-note" hidden style="margin:-4px 0 0">
-        「삶의 효능감」 자가진단 20문항입니다. 5점 척도로 모두 응답하면 네 영역별 점수와 코멘트가 나옵니다.
-        바로 <b>퀴즈 및 진단 시작</b>을 누르세요.
-      </p>
       <div class="field" id="mode-capital" hidden>
         <label>세계수도송 · 문제 방식</label>
         <div class="seg seg-4">
@@ -68,8 +80,8 @@
       </div>
       <p class="err" id="start-err" hidden></p>
       <div class="toolbar">
-        <button class="btn" type="submit">퀴즈 및 진단 시작</button>
-        <span class="hint">학번과 이름으로 지난 기록을 찾아 이어 줍니다. 매번 같은 학번과 이름을 입력하세요.</span>
+        <button class="btn" type="submit">퀴즈 시작</button>
+        <span class="hint">학번과 이름은 이전 주차 기록을 찾는 데 쓰입니다. 매주 같은 학번을 입력하세요.</span>
       </div>
     </form>
   </section>
@@ -127,8 +139,8 @@
     <div class="section-title"><h2>영역별 점수</h2><span class="hint" id="dr-total"></span></div>
     <div id="dr-factors" class="stack"></div>
 
-    <div class="section-title"><h2>나의 강점과 보완점</h2><span class="hint">전체 영역을 통틀어</span></div>
-    <div id="dr-focus" class="insight"></div>
+    <div class="section-title"><h2>특히 눈여겨볼 문항</h2><span class="hint">가장 치우치게 답한 순서</span></div>
+    <div id="dr-focus" class="focus-box"></div>
 
     <div class="section-title"><h2>코치 코멘트</h2></div>
     <div id="dr-lines" class="dr-lines"></div>
@@ -136,6 +148,47 @@
     <p class="hint" id="dr-source" style="margin-top:14px"></p>
     <div class="toolbar" style="margin-top:22px">
       <button class="btn ghost" type="button" id="btn-home-3">처음으로</button>
+    </div>
+  </section>
+
+  <!-- ===== 2-c. 가고 싶은 나라 찾기 — 한 문항씩 ===== -->
+  <section id="view-country" hidden>
+    <div class="sticky-head">
+      <div class="row">
+        <span class="who-line"><button type="button" class="back" id="btn-back-c">← 나가기</button><span id="cq-who"></span></span>
+        <span class="count"><span class="num" id="cq-n">0</span> / <span class="num" id="cq-total">15</span></span>
+      </div>
+      <div class="bar"><i id="cq-bar"></i></div>
+      <div class="sticky-title"><span class="eyebrow" style="margin:0">가고 싶은 나라 찾기</span><strong>나는 어떤 여행을 좋아할까?</strong></div>
+    </div>
+    <p class="hint" style="margin:10px 0 14px">정답이 없는 활동입니다. 끝까지 내려가면서 모든 문항에 답하면 나와 가장 잘 맞는 나라 4곳을 알려 줍니다.</p>
+    <form id="cq-form" novalidate>
+      <div id="cq-stage"></div>
+      <p class="err" id="cq-err" hidden></p>
+      <div class="toolbar" style="margin-top:20px">
+        <button class="btn" type="submit" id="cq-submit">결과 보기</button>
+        <span class="hint">모든 문항이 필수입니다.</span>
+      </div>
+    </form>
+  </section>
+
+  <!-- ===== 3-c. 나라 추천 결과 ===== -->
+  <section id="view-cresult" hidden>
+    <div class="cr-hero">
+      <div class="cr-sky"></div>
+      <div class="cr-hero-in">
+        <div class="cr-plane">✈️</div>
+        <div class="cr-eyebrow">가고 싶은 나라 찾기 · 결과</div>
+        <h2 id="cr-title">너에게 딱 맞는 나라</h2>
+        <p class="cr-who" id="cr-who"></p>
+      </div>
+    </div>
+    <div id="cr-cards" class="cr-cards"></div>
+    <div class="section-title"><h2>내가 고른 답</h2><span class="hint">이 14개 답으로 골랐습니다</span></div>
+    <div id="cr-recap" class="cr-recap"></div>
+    <div class="toolbar cr-tools">
+      <button class="btn" type="button" id="btn-cr-retry">다시 해보기</button>
+      <button class="btn ghost" type="button" id="btn-cr-home">처음으로</button>
     </div>
   </section>
 
@@ -167,7 +220,7 @@
     <div class="all-correct" id="res-perfect" hidden>모든 문항을 맞혔습니다. 자랑스러운 정화예술인!</div>
 
     <div class="section-title">
-      <h2>나의 누적 기록</h2>
+      <h2>주차별 누적 기록</h2>
       <span class="hint" id="hist-hint"></span>
     </div>
     <div class="timeline" id="timeline"></div>
@@ -188,6 +241,7 @@
 <script src="quiz-data.js"></script>
 <script src="theory-data.js"></script>
 <script src="diag-data.js"></script>
+<script src="country-data.js"></script>
 <script src="api.js"></script>
 <script>
 (function () {
@@ -202,105 +256,83 @@
     "theory-mc":     { label: "수업이론 · 객관식",         src: "theory",  type: "mc",   random: false },
     "theory-text":   { label: "수업이론 · 주관식",         src: "theory",  type: "text", random: false },
   };
-  const THEORY_DRAW = 18;      // 수업이론: 한 번에 출제되는 문항 수
-  const THEORY_MIN_NEW = 0.2;  // 직전 응시와 겹치지 않는 문항 최소 비율 (20%)
-  const THEORY_REVIEW_MAX = 6; // 직전에 틀린 문항 중 다시 내는 최대 개수
-  const THEORY_WEEK_MIN = 3;   // 자기효능감(6주차) 문항을 최소 몇 개 보장할지
-  const SUBJECT_LABEL = { capital: "세계수도송", theory: "수업이론" };
-  let prevTheory = null;       // {asked:Set, wrong:Set} — 이 학생의 직전 수업이론 기록
+  const THEORY_DRAW = 18;  // 수업이론: 한 번에 출제되는 문항 수
   let ITEMS = [];   // 이번 퀴즈의 문항 목록 (통일된 형태: {q, a, choices?, keys?, ordered?, country?})
   let TOTAL = 0;
   let MODE = null;
   const $ = (id) => document.getElementById(id);
-  const views = { start: $("view-start"), quiz: $("view-quiz"), result: $("view-result"), diag: $("view-diag"), dresult: $("view-dresult") };
+  const views = { start: $("view-start"), quiz: $("view-quiz"), result: $("view-result"), diag: $("view-diag"), dresult: $("view-dresult"), country: $("view-country"), cresult: $("view-cresult") };
   const DIAG = window.DIAG;
-  const DIAG_LABEL = { motivation: "학습동기 유형", style: "학습스타일", mindset: "마인드셋", efficacy: "삶의 효능감" };
+  const DIAG_KEYS = ["motivation", "style", "mindset"];
+  const DIAG_LABEL = { motivation: "학습동기 유형", style: "학습스타일", mindset: "마인드셋" };
   function show(name) {
     Object.keys(views).forEach((k) => (views[k].hidden = k !== name));
     window.scrollTo({ top: 0 });
   }
-  const todayLabel = () => { const d = new Date(); return `${d.getMonth() + 1}월 ${d.getDate()}일`; };
-
   const josaGa = (w) => { const c = w.charCodeAt(w.length - 1); return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 ? "이" : "가"; };
   const josa = (w) => { const c = w.charCodeAt(w.length - 1); return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 ? "은" : "는"; };
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-  function resetSubjectPanels() {
-    $("mode-capital").hidden = true;
-    $("mode-theory").hidden = true;
-    $("mode-week5").hidden = true;
-    $("week6-note").hidden = true;
-    document.querySelectorAll('input[name="mode"], input[name="diag"]').forEach((m) => { m.checked = false; });
-    $("start-err").hidden = true;
-  }
   document.querySelectorAll('input[name="subject"]').forEach((r) => r.addEventListener("change", () => {
-    resetSubjectPanels();
-    if (r.value === "capital") $("mode-capital").hidden = false;
-    else if (r.value === "theory") $("mode-theory").hidden = false;
-    else if (r.value === "week5") $("mode-week5").hidden = false;
-    else if (r.value === "week6") $("week6-note").hidden = false;
+    const v = r.value;
+    $("mode-capital").hidden = v !== "capital";
+    $("mode-theory").hidden = v !== "theory";
+    $("subject-soon").hidden = (v === "capital" || v === "theory" || v === "country");
+    $("subject-country").hidden = v !== "country";
+    // 나라찾기는 점수가 없는 활동이라 주차·학번을 묻지 않는다
+    $("start-form").classList.toggle("no-id", v === "country");
+    $("start-err").hidden = true;
+    document.querySelectorAll('input[name="mode"]').forEach((m) => { m.checked = false; });
   }));
 
-  let student = null;      // {student_id, name, section} — 분반은 지난 기록에서 물려받고, 회차는 응시 날짜로 구분한다
+  let student = null;      // {section, student_id, name, week}
   let triedSubmit = false; // 한 번이라도 제출을 눌렀는지
 
   // ---------- 시작 ----------
-  $("start-form").addEventListener("submit", async (e) => {
+  $("start-form").addEventListener("submit", (e) => {
     e.preventDefault();
     const f = e.target;
+    const week = parseInt(String(f.week.value).replace(/[^0-9]/g, ""), 10);
     const s = {
-      section: "",
+      section: f.section.value,
       student_id: f.student_id.value.trim(),
       name: f.name.value.trim(),
-      week: 0,      // DB의 week 칸이 비워 둘 수 없게 되어 있어 0으로 채운다 (회차는 created_at 순서로 센다)
+      week: week,
     };
     const err = $("start-err");
     const modeEl = document.querySelector('input[name="mode"]:checked');
-    if (!s.student_id || !s.name) {
-      err.textContent = "학번과 이름을 입력하세요.";
-      err.hidden = false;
-      return;
-    }
     const subj = document.querySelector('input[name="subject"]:checked');
-    if (!subj) {
-      err.textContent = "세계수도송 · 수업이론 · 5주차 학습내용 중 하나를 고르세요.";
-      err.hidden = false;
-      return;
-    }
-    // 학번+이름으로 지난 기록을 먼저 찾아 둔다. 분반은 예전 기록에 적힌 것을 그대로 물려받는다.
-    err.hidden = true;
-    const btn = f.querySelector('button[type="submit"]');
-    btn.disabled = true; btn.textContent = "지난 기록 찾는 중…";
-    let hist = [];
-    try { hist = await window.QuizAPI.getHistory(s.student_id, s.name); }
-    catch (ex) { console.error(ex); }
-    btn.disabled = false; btn.textContent = "퀴즈 및 진단 시작";
-    const withSec = hist.filter((h) => h.section).sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)));
-    if (withSec.length) s.section = withSec[withSec.length - 1].section;
-    if (subj.value === "week6") {
-      err.hidden = true;
-      s.mode = "efficacy";
-      student = s;
-      buildDiag("efficacy");
-      show("diag");
-      return;
-    }
-    if (subj.value === "week5") {
-      const dEl = document.querySelector('input[name="diag"]:checked');
-      if (!dEl) {
-        err.textContent = "학습동기 유형 · 학습스타일 · 마인드셋 중 하나를 고르세요.";
+    // 나라찾기는 분반·이름만 받는다 (주차·학번 없이 저장되도록 기본값을 채운다)
+    if (subj && subj.value === "country") {
+      if (!s.section || !s.name) {
+        err.textContent = "분반과 이름을 입력하세요.";
         err.hidden = false;
         return;
       }
       err.hidden = true;
-      s.mode = dEl.value;
+      s.student_id = "-";
+      s.week = 0;
+      s.mode = "country";
       student = s;
-      buildDiag(dEl.value);
+      startCountry();
+      show("country");
+      return;
+    }
+    if (!s.section || !s.student_id || !s.name || !week || week < 1) {
+      err.textContent = "분반, 주차, 학번, 이름을 모두 입력하세요.";
+      err.hidden = false;
+      return;
+    }
+    if (subj && DIAG_KEYS.includes(subj.value)) {
+      err.hidden = true;
+      s.mode = subj.value;
+      student = s;
+      buildDiag(subj.value);
       show("diag");
       return;
     }
     if (!modeEl) {
-      err.textContent = "문제 방식(객관식·주관식)을 선택하세요.";
+      err.textContent = "풀 항목을 고르고, 문제 방식을 선택하세요.";
       err.hidden = false;
       return;
     }
@@ -309,20 +341,8 @@
     MODE = MODES[s.mode];
     student = s;
     triedSubmit = false;
-    prevTheory = null;
-    if (MODE.src === "theory") {
-      const past = hist.filter((h) => String(h.mode || "").startsWith("theory-"))
-        .sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)));
-      const last = past[past.length - 1];
-      if (last && last.answers) {
-        prevTheory = {
-          asked: new Set(Object.keys(last.answers)),
-          wrong: new Set((last.wrong || []).map((w) => w.country)),
-        };
-      }
-    }
     buildQuiz();
-    $("quiz-who").textContent = `${s.name} · ${MODE.label}`;
+    $("quiz-who").textContent = `${s.section}분반 · ${s.name} · ${s.week}주차 · ${MODE.label}`;
     show("quiz");
   });
 
@@ -345,51 +365,13 @@
     return shuffle([answer, ...picked]);
   }
 
-  // 수업이론 출제: 직전 응시와 최소 20% 이상 다른 문항이 나오도록 구성
-  //  ① 직전에 틀린 문항을 최대 THEORY_REVIEW_MAX개 복습으로 포함
-  //  ② 직전에 안 나왔던 문항을 최소 20% 확보
-  //  ③ 나머지는 안 나왔던 문항 → 나왔던 문항 순으로 채움
-  function drawTheory() {
-    // 주관식에서는 '다음 중 올바른 것은?' 형식(mcOnly) 문항을 빼고 출제한다
-    const bank = THEORY.filter((it) => MODE.type === "mc" || !it.mcOnly).map((it) => Object.assign({}, it));
-    const draw = Math.min(THEORY_DRAW, bank.length);
-    const asked = prevTheory ? prevTheory.asked : new Set();
-    const wrong = prevTheory ? prevTheory.wrong : new Set();
-
-    const picked = [];
-    const add = (arr, n) => {
-      for (const it of arr) {
-        if (picked.length >= draw || n <= 0) break;
-        if (!picked.includes(it)) { picked.push(it); n--; }
-      }
-    };
-    // 직전에 안 나온 문항을 앞에 두는 정렬
-    const freshFirst = (arr) =>
-      shuffle(arr.filter((it) => !asked.has(it.q))).concat(shuffle(arr.filter((it) => asked.has(it.q))));
-
-    // ① 자기효능감(6주차) 문항을 항상 최소 THEORY_WEEK_MIN개 보장
-    const weekItems = bank.filter((it) => it.week === 6);
-    if (weekItems.length) add(freshFirst(weekItems), THEORY_WEEK_MIN);
-
-    // ② 직전에 틀린 문항 복습
-    if (prevTheory) add(shuffle(bank.filter((it) => wrong.has(it.q))), THEORY_REVIEW_MAX);
-
-    // ③ 직전에 안 나왔던 문항을 최소 20% 확보
-    const minNew = Math.ceil(draw * THEORY_MIN_NEW);
-    const newNow = () => picked.filter((it) => !asked.has(it.q)).length;
-    add(shuffle(bank.filter((it) => !asked.has(it.q))), Math.max(0, minNew - newNow()));
-
-    // ④ 남는 자리는 새 문항 우선으로 채움
-    add(freshFirst(bank), draw);
-    return shuffle(picked.slice(0, draw));
-  }
-
   function buildQuiz() {
     // 문항 목록 만들기
     if (MODE.src === "capital") {
       ITEMS = CAPITALS.map((it) => ({ q: it.country, a: it.answer, c: it.c, country: it.country }));
     } else {
-      ITEMS = drawTheory();
+      // 문제은행에서 매번 THEORY_DRAW개를 무작위로 뽑고 순서도 섞는다
+      ITEMS = shuffle(THEORY.map((it) => Object.assign({}, it))).slice(0, THEORY_DRAW);
     }
     if (MODE.random) ITEMS = shuffle(ITEMS);
     TOTAL = ITEMS.length;
@@ -513,7 +495,7 @@
     err.hidden = true;
 
     const wrong = [];
-    const essay = MODE.src !== "capital" && MODE.type === "text";
+    const essay = MODE.src === "theory" && MODE.type === "text";
     if (!essay) ITEMS.forEach((it) => {
       if (!isCorrect(it, answers[it.q])) wrong.push({ country: it.q, answer: it.a, chosen: answers[it.q] });
     });
@@ -538,9 +520,9 @@
   function renderEssay(attempt, saveErr) {
     $("res-graded").hidden = true;
     $("res-essay").hidden = false;
-    $("res-eyebrow").textContent = `${todayLabel()} · ${MODE.label}`;
-    $("essay-who").textContent = `${attempt.student_id} · ${attempt.name}` +
-      (saveErr ? " · 저장에 실패했습니다 (" + String(saveErr.message || saveErr).slice(0, 80) + ")" : window.QuizAPI.mode === "local" ? " · (연습 모드)" : " · 제출 완료");
+    $("res-eyebrow").textContent = `${attempt.week}주차 · ${MODE.label}`;
+    $("essay-who").textContent = `${attempt.section}분반 · ${attempt.student_id} · ${attempt.name}` +
+      (saveErr ? " · 저장에 실패했습니다" : window.QuizAPI.mode === "local" ? " · (연습 모드)" : " · 제출 완료");
     const ol = $("essay-list");
     ol.innerHTML = "";
     ITEMS.forEach((it) => {
@@ -558,10 +540,10 @@
     $("res-graded").hidden = false;
     $("res-essay").hidden = true;
     const s = attempt;
-    $("res-eyebrow").textContent = `${todayLabel()} 결과 · ${MODE.label}`;
+    $("res-eyebrow").textContent = `${s.week}주차 결과 · ${MODE.label}`;
     $("res-score").textContent = s.score;
     $("res-total").textContent = ` / ${s.total}점`;
-    $("res-who").textContent = `${s.student_id} · ${s.name}`;
+    $("res-who").textContent = `${s.section}분반 · ${s.student_id} · ${s.name}`;
 
     const ul = $("res-wrong");
     ul.innerHTML = "";
@@ -586,14 +568,13 @@
       history = [Object.assign({ created_at: new Date().toISOString() }, attempt)];
     } else {
       hint.className = "hint";
-      hint.textContent = (window.QuizAPI.mode === "local" ? "(연습 모드: 이 브라우저에만 저장됩니다) " : "") + `${SUBJECT_LABEL[MODE.src] || "최근"} 최근 3회`;
+      hint.textContent = (window.QuizAPI.mode === "local" ? "(연습 모드: 이 브라우저에만 저장됩니다) " : "") + `${MODE.src === "capital" ? "세계수도송" : "수업이론"} 최근 3회`;
     }
 
     // 시간 순으로 정렬해 "최근 3번 시도"만 사용 (주차 번호를 잘못 넣어도 순서가 꼬이지 않게)
     const subjectOf = (m) => String(m || "capital-mc").split("-")[0];
     history = history.filter((h) => subjectOf(h.mode) === subjectOf(s.mode) && (h.total || 0) > 0);
     const byTime = [...history].sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)));
-    byTime.forEach((h, i) => { h._try = i + 1; });   // 1회차, 2회차… 도전 순서
     const recent3 = byTime.slice(-3);            // 오래된 → 최신
     const latest = recent3[recent3.length - 1];  // 이번 시도
 
@@ -608,7 +589,7 @@
       }
       const it = document.createElement("div");
       it.className = "tl-item" + (h === latest ? " now" : "");
-      it.innerHTML = `<div class="wk">${h._try}회차</div><div class="sc">${h.score}<span style="font-size:.85rem;color:var(--muted)">/${h.total}</span></div>`;
+      it.innerHTML = `<div class="wk">${h.week}주차</div><div class="sc">${h.score}<span style="font-size:.85rem;color:var(--muted)">/${h.total}</span></div>`;
       tl.appendChild(it);
     });
 
@@ -621,7 +602,7 @@
       const card = document.createElement("div");
       card.className = "hist" + (h === latest ? " current" : "");
       card.innerHTML =
-        `<div class="head"><span class="wk">${h._try}회차 도전 <span class="when">${(MODES[h.mode] || MODES["capital-mc"]).label.split(" · ")[1]} · ${when}</span></span>` +
+        `<div class="head"><span class="wk">${h.week}주차 <span class="when">${(MODES[h.mode] || MODES["capital-mc"]).label.split(" · ")[1]} · ${when}</span></span>` +
         `<span class="sc">${h.score}/${h.total} <span class="pill ${wrongs.length ? "bad" : "ok"}">틀림 ${wrongs.length}</span></span></div>` +
         `<div class="body">` +
         (wrongs.length
@@ -641,7 +622,7 @@
     const d = DIAG[key];
     DITEMS = [];
     d.factors.forEach((f) => f.items.forEach((t) => DITEMS.push({ n: DITEMS.length + 1, text: t, fkey: f.key })));
-    $("diag-who").textContent = `${student.name}`;
+    $("diag-who").textContent = `${student.section}분반 · ${student.name} · ${student.week}주차`;
     $("diag-eyebrow").textContent = DIAG_LABEL[key] + " 진단";
     $("diag-title").textContent = d.question;
     $("diag-guide").textContent = d.guide;
@@ -710,9 +691,9 @@
 
   function renderDiagResult(attempt, vals, scores, history, saveErr) {
     const d = DIAG[DKEY];
-    $("dr-eyebrow").textContent = `${todayLabel()} · ${DIAG_LABEL[DKEY]} 진단 결과`;
+    $("dr-eyebrow").textContent = `${attempt.week}주차 · ${DIAG_LABEL[DKEY]} 진단 결과`;
     $("dr-title").textContent = d.question;
-    $("dr-who").textContent = `${attempt.student_id} · ${attempt.name}` + (saveErr ? " · 저장 실패 (" + String(saveErr.message || saveErr).slice(0, 80) + ")" : window.QuizAPI.mode === "local" ? " · (연습 모드)" : "");
+    $("dr-who").textContent = `${attempt.section}분반 · ${attempt.student_id} · ${attempt.name}` + (saveErr ? " · 저장 실패" : window.QuizAPI.mode === "local" ? " · (연습 모드)" : "");
     const avgs = {};
     d.factors.forEach((f) => { avgs[f.key] = scores[f.key] / f.items.length; });
     const r = d.interpret(scores, avgs);
@@ -729,7 +710,15 @@
       const v = scores[f.key], mx = f.items.length * 5, avg = v / f.items.length;
       const note = d.factorNotes[f.key];
       const level = avg >= 3.5 ? "high" : avg <= 2.5 ? "low" : "mid";
-      const comment = note[level] || "";
+      const comment = level === "high" ? note.high : level === "low" ? note.low : "";
+      // 이 요인 안에서 가장 높게 / 가장 낮게 답한 문항 (차이가 있을 때만)
+      const own = vals.filter((x) => x.it.fkey === f.key);
+      const mx2 = Math.max(...own.map((x) => x.v)), mn2 = Math.min(...own.map((x) => x.v));
+      const top = own.find((x) => x.v === mx2), bot = own.find((x) => x.v === mn2);
+      const spread = mx2 - mn2 >= 2
+        ? `<div class="fac-flag"><div class="ff-row"><span class="ff-tag high">가장 높게</span><span>${top.it.n}. ${esc(top.it.text)} <b>${mx2}점</b></span></div>` +
+          `<div class="ff-row"><span class="ff-tag low">가장 낮게</span><span>${bot.it.n}. ${esc(bot.it.text)} <b>${mn2}점</b></span></div></div>`
+        : `<div class="fac-flag"><span class="hint">이 묶음은 문항끼리 답이 비슷합니다 (모두 ${mn2}~${mx2}점).</span></div>`;
       fl.insertAdjacentHTML("beforeend",
         `<div class="fac ${level}">` +
         `<div class="fac-head"><div><span class="fac-name">${esc(f.name)}</span><span class="fac-sub">${esc(f.sub)}</span></div>` +
@@ -737,52 +726,209 @@
         `<div class="meter"><i style="width:${(v / mx * 100).toFixed(0)}%"></i></div>` +
         `<div class="fac-desc">${esc(note.desc)}</div>` +
         (comment ? `<div class="fac-comment">${esc(comment)}</div>` : "") +
+        spread +
         `</div>`);
     });
-    // ---- 나의 강점과 보완점 : 전체 영역을 통틀어 도출 ----
-    // 문항 치우침(salience) = 부정 방향 문항이면 (점수-3), 긍정 방향 문항이면 (3-점수).
-    // 값이 클수록 보완이 필요한 쪽, 작을수록(음수일수록) 강점 쪽.
-    const negKey = {}, fname = {}, fmax = {};
-    d.factors.forEach((f) => { negKey[f.key] = !!f.negative; fname[f.key] = f.name; fmax[f.key] = f.items.length * 5; });
-    const sal = (x) => (negKey[x.it.fkey] ? x.v - 3 : 3 - x.v);
-    // 영역 단위 비교 : 부정 방향 영역은 뒤집어서 '좋은 쪽' 기준으로 맞춘다
-    const good = {};
-    d.factors.forEach((f) => { const a = scores[f.key] / f.items.length; good[f.key] = f.negative ? 6 - a : a; });
-    const fkeys = d.factors.map((f) => f.key);
-    const bestF = fkeys.reduce((a, b) => (good[a] >= good[b] ? a : b));
-    const worstF = fkeys.reduce((a, b) => (good[a] <= good[b] ? a : b));
-    const itemLine = (o) => {
-      const neg = negKey[o.it.fkey];
-      return `<li><span class="ins-q">${esc(o.it.text)}</span>` +
-        `<span class="ins-meta">${esc(fname[o.it.fkey])} · 내 응답 ${o.v}점` +
-        `<span class="hint"> (${neg ? "낮을수록" : "높을수록"} 좋은 문항)</span></span></li>`;
-    };
-    const strongItems = vals.filter((x) => sal(x) <= -1).sort((a, b) => sal(a) - sal(b) || a.it.n - b.it.n).slice(0, 3);
-    const weakItems = vals.filter((x) => sal(x) >= 1).sort((a, b) => sal(b) - sal(a) || a.it.n - b.it.n).slice(0, 3);
-    const card = (kind, label, pill, head, say, items, empty) =>
-      `<div class="ins ${kind}"><div class="ins-head"><span class="pill ${pill}">${label}</span><b>${esc(head)}</b></div>` +
-      `<p class="ins-say">${esc(say)}</p>` +
-      (items.length ? `<ul class="ins-items">${items.map(itemLine).join("")}</ul>`
-                    : `<p class="hint" style="margin:0">${esc(empty)}</p>`) + `</div>`;
-    const sameF = bestF === worstF;
-    const strongHead = `${fname[bestF]} ${scores[bestF]}/${fmax[bestF]}점`;
-    const weakHead = `${fname[worstF]} ${scores[worstF]}/${fmax[worstF]}점`;
-    const strongSay = sameF
-      ? "네 영역의 점수가 거의 같게 나왔습니다. 아래 문항들이 지금 나를 가장 잘 받쳐 주는 지점입니다."
-      : `전체 영역을 통틀어 ${fname[bestF]}${josa(fname[bestF])} 가장 든든하게 받쳐 주고 있습니다. 여기서 이미 할 수 있는 방식을 다른 영역에도 그대로 옮겨 써 보세요.`;
-    const weakSay = sameF
-      ? "특별히 뒤처진 영역은 없습니다. 아래 문항만 조금 손보면 전체가 함께 올라갑니다."
-      : `${fname[worstF]}${josa(fname[worstF])} 상대적으로 가장 얇습니다. 한꺼번에 바꾸려 하지 말고 아래 문항 하나를 이번 주의 과제로 잡아 보세요.`;
-    $("dr-focus").innerHTML =
-      card("strong", "강점", "ok", strongHead, strongSay, strongItems,
-           "특별히 도드라지게 높은 문항은 없지만, 전 영역에 고르게 답했다는 뜻이기도 합니다.") +
-      card("weak", "보완점", "bad", weakHead, weakSay, weakItems,
-           "한쪽으로 크게 치우친 응답이 없습니다. 지금 흐름을 그대로 이어 가세요.");
+    // ---- 특히 눈여겨볼 문항 : 전체 문항에서 치우침(salience)이 큰 순서로 3개 ----
+    // salience = 부정 방향 문항이면 (점수-3), 긍정 방향 문항이면 (3-점수). 1 이상만 후보.
+    const negKey = {};
+    d.factors.forEach((f) => { negKey[f.key] = !!f.negative; });
+    const fname = {};
+    d.factors.forEach((f) => { fname[f.key] = f.name; });
+    const ranked = vals
+      .map((x) => ({ x, sal: negKey[x.it.fkey] ? x.v - 3 : 3 - x.v }))
+      .filter((o) => o.sal >= 1)
+      .sort((a, b) => b.sal - a.sal || a.x.it.n - b.x.it.n)
+      .slice(0, 3);
+    const fb = $("dr-focus");
+    if (!ranked.length) {
+      fb.innerHTML = `<p class="hint" style="margin:0">한쪽으로 크게 치우친 응답이 없습니다. 모든 문항에 고르게 답했다는 뜻입니다.</p>`;
+    } else {
+      fb.innerHTML =
+        `<p class="focus-why">낮아야 좋은 문항에 높게 답했거나, 높아야 좋은 문항에 낮게 답한 순서로 골랐습니다.</p>` +
+        `<ol class="focus-list">` + ranked.map((o) => {
+          const neg = negKey[o.x.it.fkey];
+          return `<li><div class="fo-q">${esc(o.x.it.text)}</div>` +
+            `<div class="fo-meta"><span class="pill ${neg ? "bad" : "ok"}">${esc(fname[o.x.it.fkey])}</span>` +
+            `<span class="hint">내 응답 ${o.x.v}점 · ${neg ? "낮을수록 좋은 문항" : "높을수록 좋은 문항"}</span></div></li>`;
+        }).join("") + `</ol>`;
+    }
 
     const ln = $("dr-lines"); ln.innerHTML = r.lines.map((t) => `<p>${esc(t)}</p>`).join("");
     $("dr-source").textContent = d.source;
   }
-  $("btn-home-3").addEventListener("click", () => { $("start-form").reset(); resetSubjectPanels(); show("start"); });
+  $("btn-home-3").addEventListener("click", () => { $("start-form").reset(); show("start"); });
+
+  // ---------- 가고 싶은 나라 찾기 ----------
+  const CQ = window.COUNTRY_Q || [];
+  let cqPick = {};         // {문항번호: 고른 보기 번호}
+  let cqTried = false;     // 한 번이라도 제출을 눌렀는지
+  const YN = [{ t: "그렇다", s: "맞아요", v: 1 }, { t: "아니다", s: "아닌 편", v: 0 }];
+  const cqOpts = (q) => (q.yn ? YN : q.opts);
+
+  // 15문항을 한 페이지에 모두 깔아 두고, 내려가면서 답하게 한다
+  function startCountry() {
+    cqPick = {}; cqTried = false;
+    $("cq-who").textContent = `${student.section}분반 · ${student.name}`;
+    $("cq-total").textContent = CQ.length;
+    $("cq-err").hidden = true;
+    $("cq-stage").innerHTML = CQ.map((q, i) =>
+      `<div class="cq-card" id="cq-${i}">` +
+      `<div class="cq-num">문항 ${i + 1}</div>` +
+      `<div class="cq-q">${esc(q.q)}</div>` +
+      `<div class="cq-opts${q.yn ? " yn" : ""}">` +
+      cqOpts(q).map((o, j) =>
+        `<button type="button" class="cq-opt" data-i="${i}" data-j="${j}">` +
+        `<span class="cq-opt-t">${esc(o.t)}</span>` +
+        (o.s ? `<span class="cq-opt-s">${esc(o.s)}</span>` : "") +
+        `</button>`).join("") +
+      `</div></div>`).join("");
+    cqProgress();
+    window.scrollTo({ top: 0 });
+  }
+
+  function cqProgress() {
+    const n = Object.keys(cqPick).length;
+    $("cq-n").textContent = n;
+    $("cq-bar").style.width = (CQ.length ? n / CQ.length * 100 : 0) + "%";
+  }
+
+  $("cq-stage").addEventListener("click", (e) => {
+    const b = e.target.closest(".cq-opt");
+    if (!b) return;
+    const i = parseInt(b.dataset.i, 10), j = parseInt(b.dataset.j, 10);
+    cqPick[i] = j;
+    const box = $("cq-" + i);
+    box.querySelectorAll(".cq-opt").forEach((x) => x.classList.remove("on"));
+    b.classList.add("on");
+    box.classList.remove("missing");
+    cqProgress();
+    if (cqTried) {
+      const left = document.querySelectorAll("#cq-stage .cq-card.missing").length;
+      if (left === 0) $("cq-err").hidden = true;
+      else $("cq-err").textContent = `아직 ${left}문항이 남았습니다.`;
+    }
+  });
+
+  $("btn-back-c").addEventListener("click", () => {
+    if (Object.keys(cqPick).length > 0 && !confirm("지금까지 고른 답은 사라집니다. 처음 화면으로 돌아갈까요?")) return;
+    $("cq-stage").innerHTML = ""; show("start");
+  });
+
+  $("cq-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    cqTried = true;
+    let missing = 0;
+    CQ.forEach((q, i) => {
+      const box = $("cq-" + i);
+      if (cqPick[i] === undefined) { box.classList.add("missing"); missing++; }
+      else box.classList.remove("missing");
+    });
+    if (missing) {
+      $("cq-err").textContent = `아직 ${missing}문항이 남았습니다. 빨간 점선 문항을 채워 주세요.`;
+      $("cq-err").hidden = false;
+      const el = document.querySelector("#cq-stage .cq-card.missing");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    $("cq-err").hidden = true;
+
+    const ans = {};
+    CQ.forEach((q, i) => { ans[q.k] = cqOpts(q)[cqPick[i]].v; });
+    const picks = window.COUNTRY_MATCH(ans, 4);
+    renderCountryResult(picks);
+    show("cresult");
+
+    // 교수자 화면에서 볼 수 있도록 저장 (점수가 없는 활동이라 0/0으로 남긴다)
+    const answers = {};
+    CQ.forEach((q, i) => { answers[(i + 1) + ". " + q.q] = cqOpts(q)[cqPick[i]].t; });
+    answers._picks = picks.map((p) => p.country.name + " " + p.pct + "%");
+    try { await window.QuizAPI.saveAttempt(Object.assign({}, student, { score: 0, total: 0, wrong: [], answers })); }
+    catch (ex) { console.error(ex); }
+  });
+
+  function renderCountryResult(picks) {
+    const first = picks[0].country;
+    $("cr-title").textContent = `${student.name}${josa(student.name)} ${first.name}${josaGa(first.name)} 1순위!`;
+    $("cr-who").textContent = `${student.section}분반 · ${student.name} · ${CQ.length}문항 결과`;
+    const RANK = ["1순위", "2순위", "3순위", "4순위"];
+    $("cr-cards").innerHTML = picks.map((p, i) => {
+      const c = p.country;
+      return `<article class="cr-card r${i}" style="--c1:${c.c1};--c2:${c.c2}">` +
+        `<div class="cr-band">` +
+          `<span class="cr-rank">${RANK[i]}</span>` +
+          `<span class="cr-flag">${c.flag}</span>` +
+          `<span class="cr-name"><b>${esc(c.name)}</b><i>수도 · ${esc(c.cap)}</i></span>` +
+          `<span class="cr-pct"><b>${p.pct}</b><small>%</small></span>` +
+        `</div>` +
+        (i === 0 ? photoStrip(c) : "") +
+        `<div class="cr-body">` +
+          `<div class="cr-row"><span class="cr-ico">✈️</span><div><b>비행시간</b><p>${esc(c.fly)}</p></div></div>` +
+          `<div class="cr-row"><span class="cr-ico">🗓️</span><div><b>가기 좋은 때</b><p>${esc(c.best)}</p></div></div>` +
+          `<div class="cr-row"><span class="cr-ico">🍽️</span><div><b>대표 음식</b><p>${c.food.map(esc).join(" · ")}</p></div></div>` +
+          `<div class="cr-row"><span class="cr-ico">📍</span><div><b>대표 관광지</b><p>${c.spot.map(esc).join(" · ")}</p></div></div>` +
+          (p.reasons.length
+            ? `<div class="cr-why"><b>왜 추천?</b><div class="cr-tags">` +
+              p.reasons.map((t) => `<span class="cr-tag">${esc(t)}</span>`).join("") + `</div></div>`
+            : "") +
+        `</div></article>`;
+    }).join("");
+    loadPhotos(first);
+    $("cr-recap").innerHTML = CQ.map((q, i) => {
+      const o = cqOpts(q)[cqPick[i]];
+      return `<div class="cr-ans"><span class="cr-ans-q">${i + 1}. ${esc(q.q)}</span>` +
+        `<span class="cr-ans-a">${esc(o ? o.t : "-")}</span></div>`;
+    }).join("");
+  }
+
+  // 1순위 나라의 대표 관광지 사진 3장 (위키백과 이미지)
+  function photoStrip(c) {
+    return `<div class="cr-photos">` + c.spot.map((sp, k) =>
+      `<figure class="cr-ph" id="cr-ph-${k}"><div class="cr-ph-img"><span>${esc(sp)}</span></div>` +
+      `<figcaption>${esc(sp)}</figcaption></figure>`).join("") + `</div>`;
+  }
+
+  async function loadPhotos(c) {
+    const want = (c.pic || []).map((s, k) => {
+      const i = s.indexOf(":");
+      return { k: k, lang: s.slice(0, i), title: s.slice(i + 1) };
+    });
+    const byLang = {};
+    want.forEach((w) => { (byLang[w.lang] = byLang[w.lang] || []).push(w); });
+    for (const lang of Object.keys(byLang)) {
+      const list = byLang[lang];
+      const url = `https://${lang}.wikipedia.org/w/api.php?action=query&redirects=1&titles=` +
+        encodeURIComponent(list.map((w) => w.title).join("|")) +
+        `&prop=pageimages&piprop=thumbnail&pithumbsize=640&format=json&origin=*`;
+      try {
+        const j = await (await fetch(url)).json();
+        if (!j.query || !j.query.pages) continue;
+        // 위키가 제목을 고쳐 보내면(정규화·넘겨주기) 원래 제목으로 되돌린다
+        const back = {};
+        (j.query.redirects || []).forEach((n) => { back[n.to] = n.from; });
+        const norm = {};
+        (j.query.normalized || []).forEach((n) => { norm[n.to] = n.from; });
+        Object.keys(j.query.pages).forEach((id) => {
+          const pg = j.query.pages[id];
+          if (!pg.thumbnail) return;
+          let t = pg.title;
+          if (back[t]) t = back[t];
+          if (norm[t]) t = norm[t];
+          const w = list.filter((x) => x.title === t)[0];
+          if (!w) return;
+          const box = document.querySelector(`#cr-ph-${w.k} .cr-ph-img`);
+          if (!box) return;
+          const img = new Image();
+          img.alt = "";
+          img.onload = () => { box.innerHTML = ""; box.appendChild(img); box.classList.add("on"); };
+          img.src = pg.thumbnail.source;
+        });
+      } catch (ex) { console.error("사진을 불러오지 못했습니다", ex); }
+    }
+  }
+
+  $("btn-cr-retry").addEventListener("click", () => { startCountry(); show("country"); });
+  $("btn-cr-home").addEventListener("click", () => { $("start-form").reset(); $("start-form").classList.remove("no-id"); show("start"); });
 
   // ---------- 격려 메시지 ----------
   const CHEERS = {
@@ -836,17 +982,16 @@
     el.innerHTML = `<div class="cheer-label">${esc(s.name)}에게</div><p>${esc(msg)}</p>`;
   }
 
-  // 퀴즈 화면 → 시작 화면 (입력한 학번·이름은 그대로 두고 문제만 버림)
+  // 퀴즈 화면 → 시작 화면 (입력한 분반·학번·이름은 그대로 두고 문제만 버림)
   $("btn-back").addEventListener("click", () => {
     if (answeredCount() > 0 && !confirm("지금까지 고른 답은 사라집니다. 처음 화면으로 돌아갈까요?")) return;
     $("quiz-body").innerHTML = "";
     $("quiz-err").hidden = true;
     show("start");
   });
-  $("btn-home-2").addEventListener("click", () => { $("start-form").reset(); resetSubjectPanels(); show("start"); });
+  $("btn-home-2").addEventListener("click", () => { $("start-form").reset(); show("start"); });
   $("btn-home").addEventListener("click", () => {
     $("start-form").reset();
-    resetSubjectPanels();
     show("start");
   });
 })();
