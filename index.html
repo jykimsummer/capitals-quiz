@@ -17,7 +17,7 @@
     <h1>자기주도적학습코칭 완전정복</h1>
     <p class="lede">우리는 자랑스러운 정화예술인! 외울 수 있다!</p>
 
-    <form id="start-form" class="card stack" style="margin-top:22px" novalidate>
+    <form id="start-form" class="card stack no-id" style="margin-top:22px" novalidate>
       <div class="grid-2">
         <div class="field">
           <label for="section">분반</label>
@@ -60,7 +60,7 @@
           <label class="seg-item"><input type="radio" name="subject" value="country"><span>🌍 가고 싶은 나라 찾기<small>15문항 · 나에게 맞는 나라 4곳</small></span></label>
         </div>
         <p class="hint" id="subject-soon" hidden>등급이 아니라 지금 내 위치를 찍는 자가진단입니다. 5점 척도로 솔직하게 답하면 결과와 코멘트가 나옵니다.</p>
-        <p class="hint" id="subject-country" hidden>점수가 없는 활동입니다. 15문항에 답하면 나와 가장 잘 맞는 나라 4곳을 수도·국기·음식·관광지·비행시간과 함께 알려 줍니다. 주차·학번은 받지 않습니다.</p>
+        <p class="hint" id="subject-country" hidden>점수가 없는 활동입니다. 15문항에 답하면 나와 가장 잘 맞는 나라 4곳을 수도·국기·음식·관광지·비행시간·사진과 함께 알려 줍니다.</p>
       </div>
       <div class="field" id="mode-capital" hidden>
         <label>세계수도송 · 문제 방식</label>
@@ -81,7 +81,7 @@
       <p class="err" id="start-err" hidden></p>
       <div class="toolbar">
         <button class="btn" type="submit">퀴즈 시작</button>
-        <span class="hint">학번과 이름은 이전 주차 기록을 찾는 데 쓰입니다. 매주 같은 학번을 입력하세요.</span>
+        <span class="hint">분반과 이름만 입력하면 됩니다.</span>
       </div>
     </form>
   </section>
@@ -219,12 +219,14 @@
     <ul class="wrong-list" id="res-wrong"></ul>
     <div class="all-correct" id="res-perfect" hidden>모든 문항을 맞혔습니다. 자랑스러운 정화예술인!</div>
 
-    <div class="section-title">
-      <h2>주차별 누적 기록</h2>
-      <span class="hint" id="hist-hint"></span>
+    <div id="hist-box" hidden>
+      <div class="section-title">
+        <h2>주차별 누적 기록</h2>
+        <span class="hint" id="hist-hint"></span>
+      </div>
+      <div class="timeline" id="timeline"></div>
+      <div class="hist-grid" id="hist-list"></div>
     </div>
-    <div class="timeline" id="timeline"></div>
-    <div class="hist-grid" id="hist-list"></div>
 
     <div class="cheer" id="cheer"></div>
 
@@ -279,8 +281,6 @@
     $("mode-theory").hidden = v !== "theory";
     $("subject-soon").hidden = (v === "capital" || v === "theory" || v === "country");
     $("subject-country").hidden = v !== "country";
-    // 나라찾기는 점수가 없는 활동이라 주차·학번을 묻지 않는다
-    $("start-form").classList.toggle("no-id", v === "country");
     $("start-err").hidden = true;
     document.querySelectorAll('input[name="mode"]').forEach((m) => { m.checked = false; });
   }));
@@ -303,24 +303,20 @@
     const modeEl = document.querySelector('input[name="mode"]:checked');
     const subj = document.querySelector('input[name="subject"]:checked');
     // 나라찾기는 분반·이름만 받는다 (주차·학번 없이 저장되도록 기본값을 채운다)
+    if (!s.section || !s.name) {
+      err.textContent = "분반과 이름을 입력하세요.";
+      err.hidden = false;
+      return;
+    }
+    // 주차·학번은 더 이상 받지 않는다. 기록은 분반+이름으로만 남긴다
+    s.student_id = s.name;
+    s.week = 0;
     if (subj && subj.value === "country") {
-      if (!s.section || !s.name) {
-        err.textContent = "분반과 이름을 입력하세요.";
-        err.hidden = false;
-        return;
-      }
       err.hidden = true;
-      s.student_id = "-";
-      s.week = 0;
       s.mode = "country";
       student = s;
       startCountry();
       show("country");
-      return;
-    }
-    if (!s.section || !s.student_id || !s.name || !week || week < 1) {
-      err.textContent = "분반, 주차, 학번, 이름을 모두 입력하세요.";
-      err.hidden = false;
       return;
     }
     if (subj && DIAG_KEYS.includes(subj.value)) {
@@ -342,7 +338,7 @@
     student = s;
     triedSubmit = false;
     buildQuiz();
-    $("quiz-who").textContent = `${s.section}분반 · ${s.name} · ${s.week}주차 · ${MODE.label}`;
+    $("quiz-who").textContent = `${s.section}분반 · ${s.name} · ${MODE.label}`;
     show("quiz");
   });
 
@@ -622,7 +618,7 @@
     const d = DIAG[key];
     DITEMS = [];
     d.factors.forEach((f) => f.items.forEach((t) => DITEMS.push({ n: DITEMS.length + 1, text: t, fkey: f.key })));
-    $("diag-who").textContent = `${student.section}분반 · ${student.name} · ${student.week}주차`;
+    $("diag-who").textContent = `${student.section}분반 · ${student.name}`;
     $("diag-eyebrow").textContent = DIAG_LABEL[key] + " 진단";
     $("diag-title").textContent = d.question;
     $("diag-guide").textContent = d.guide;
@@ -861,19 +857,19 @@
           `<span class="cr-name"><b>${esc(c.name)}</b><i>수도 · ${esc(c.cap)}</i></span>` +
           `<span class="cr-pct"><b>${p.pct}</b><small>%</small></span>` +
         `</div>` +
-        (i === 0 ? photoStrip(c) : "") +
+        photoStrip(p, i) +
         `<div class="cr-body">` +
           `<div class="cr-row"><span class="cr-ico">✈️</span><div><b>비행시간</b><p>${esc(c.fly)}</p></div></div>` +
           `<div class="cr-row"><span class="cr-ico">🗓️</span><div><b>가기 좋은 때</b><p>${esc(c.best)}</p></div></div>` +
           `<div class="cr-row"><span class="cr-ico">🍽️</span><div><b>대표 음식</b><p>${c.food.map(esc).join(" · ")}</p></div></div>` +
-          `<div class="cr-row"><span class="cr-ico">📍</span><div><b>대표 관광지</b><p>${c.spot.map(esc).join(" · ")}</p></div></div>` +
+          `<div class="cr-row"><span class="cr-ico">📍</span><div><b>대표 관광지</b><p>${p.spots.map((x) => esc(x.n)).join(" · ")}</p></div></div>` +
           (p.reasons.length
             ? `<div class="cr-why"><b>왜 추천?</b><div class="cr-tags">` +
               p.reasons.map((t) => `<span class="cr-tag">${esc(t)}</span>`).join("") + `</div></div>`
             : "") +
         `</div></article>`;
     }).join("");
-    loadPhotos(first);
+    loadPhotos(picks);
     $("cr-recap").innerHTML = CQ.map((q, i) => {
       const o = cqOpts(q)[cqPick[i]];
       return `<div class="cr-ans"><span class="cr-ans-q">${i + 1}. ${esc(q.q)}</span>` +
@@ -881,54 +877,58 @@
     }).join("");
   }
 
-  // 1순위 나라의 대표 관광지 사진 3장 (위키백과 이미지)
-  function photoStrip(c) {
-    return `<div class="cr-photos">` + c.spot.map((sp, k) =>
-      `<figure class="cr-ph" id="cr-ph-${k}"><div class="cr-ph-img"><span>${esc(sp)}</span></div>` +
-      `<figcaption>${esc(sp)}</figcaption></figure>`).join("") + `</div>`;
+  // 추천된 네 나라 모두, 응답에 맞춰 고른 관광지 사진 3장씩 (위키백과 이미지)
+  function photoStrip(p, i) {
+    return `<div class="cr-photos${i > 0 ? " small" : ""}">` + p.spots.map((sp, k) =>
+      `<figure class="cr-ph" id="cr-ph-${i}-${k}"><div class="cr-ph-img"><span>${esc(sp.n)}</span></div>` +
+      `<figcaption>${esc(sp.n)}</figcaption></figure>`).join("") + `</div>`;
   }
 
-  async function loadPhotos(c) {
-    const want = (c.pic || []).map((s, k) => {
-      const i = s.indexOf(":");
-      return { k: k, lang: s.slice(0, i), title: s.slice(i + 1) };
-    });
+  async function loadPhotos(picks) {
     const byLang = {};
-    want.forEach((w) => { (byLang[w.lang] = byLang[w.lang] || []).push(w); });
+    picks.forEach((p, i) => p.spots.forEach((sp, k) => {
+      const at = sp.p.indexOf(":");
+      const lang = sp.p.slice(0, at);
+      (byLang[lang] = byLang[lang] || []).push({ id: `cr-ph-${i}-${k}`, title: sp.p.slice(at + 1) });
+    }));
     for (const lang of Object.keys(byLang)) {
       const list = byLang[lang];
-      const url = `https://${lang}.wikipedia.org/w/api.php?action=query&redirects=1&titles=` +
-        encodeURIComponent(list.map((w) => w.title).join("|")) +
-        `&prop=pageimages&piprop=thumbnail&pithumbsize=640&format=json&origin=*`;
-      try {
-        const j = await (await fetch(url)).json();
-        if (!j.query || !j.query.pages) continue;
-        // 위키가 제목을 고쳐 보내면(정규화·넘겨주기) 원래 제목으로 되돌린다
-        const back = {};
-        (j.query.redirects || []).forEach((n) => { back[n.to] = n.from; });
-        const norm = {};
-        (j.query.normalized || []).forEach((n) => { norm[n.to] = n.from; });
-        Object.keys(j.query.pages).forEach((id) => {
-          const pg = j.query.pages[id];
-          if (!pg.thumbnail) return;
-          let t = pg.title;
-          if (back[t]) t = back[t];
-          if (norm[t]) t = norm[t];
-          const w = list.filter((x) => x.title === t)[0];
-          if (!w) return;
-          const box = document.querySelector(`#cr-ph-${w.k} .cr-ph-img`);
-          if (!box) return;
-          const img = new Image();
-          img.alt = "";
-          img.onload = () => { box.innerHTML = ""; box.appendChild(img); box.classList.add("on"); };
-          img.src = pg.thumbnail.source;
-        });
-      } catch (ex) { console.error("사진을 불러오지 못했습니다", ex); }
+      const uniq = [];
+      list.forEach((w) => { if (uniq.indexOf(w.title) < 0) uniq.push(w.title); });
+      for (let n = 0; n < uniq.length; n += 20) {
+        const url = `https://${lang}.wikipedia.org/w/api.php?action=query&redirects=1&titles=` +
+          encodeURIComponent(uniq.slice(n, n + 20).join("|")) +
+          `&prop=pageimages&piprop=thumbnail&pithumbsize=640&format=json&origin=*`;
+        try {
+          const j = await (await fetch(url)).json();
+          if (!j.query || !j.query.pages) continue;
+          // 위키가 제목을 고쳐 보내면(정규화·넘겨주기) 원래 제목으로 되돌린다
+          const back = {};
+          (j.query.redirects || []).forEach((x) => { back[x.to] = x.from; });
+          const norm = {};
+          (j.query.normalized || []).forEach((x) => { norm[x.to] = x.from; });
+          Object.keys(j.query.pages).forEach((id) => {
+            const pg = j.query.pages[id];
+            if (!pg.thumbnail) return;
+            let t = pg.title;
+            if (back[t]) t = back[t];
+            if (norm[t]) t = norm[t];
+            list.filter((w) => w.title === t).forEach((w) => {
+              const box = document.querySelector("#" + w.id + " .cr-ph-img");
+              if (!box) return;
+              const img = new Image();
+              img.alt = "";
+              img.onload = () => { box.innerHTML = ""; box.appendChild(img); };
+              img.src = pg.thumbnail.source;
+            });
+          });
+        } catch (ex) { console.error("사진을 불러오지 못했습니다", ex); }
+      }
     }
   }
 
   $("btn-cr-retry").addEventListener("click", () => { startCountry(); show("country"); });
-  $("btn-cr-home").addEventListener("click", () => { $("start-form").reset(); $("start-form").classList.remove("no-id"); show("start"); });
+  $("btn-cr-home").addEventListener("click", () => { $("start-form").reset(); show("start"); });
 
   // ---------- 격려 메시지 ----------
   const CHEERS = {

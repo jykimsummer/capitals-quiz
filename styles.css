@@ -472,3 +472,29 @@ footer { margin-top: 40px; color: var(--muted); font-size: 0.8rem; text-align: c
   text-align: center; text-shadow: 0 1px 4px rgba(0,0,0,.3);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+
+/* ===== 문항을 더 촘촘하게 (폰에서 스크롤 줄이기) ===== */
+#cq-stage .cq-card {
+  margin-top: 10px; padding: 14px 14px 16px; border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(30,47,77,.05);
+}
+#cq-stage .cq-num { margin-bottom: 8px; padding: 3px 9px; font-size: .68rem; }
+#cq-stage .cq-q { font-size: clamp(1rem, 3.9vw, 1.15rem); line-height: 1.35; }
+#cq-stage .cq-opts { gap: 6px; margin-top: 11px; }
+#cq-stage .cq-opts.yn { grid-template-columns: 1fr 1fr; }
+#cq-stage .cq-opt {
+  flex-direction: row; align-items: baseline; flex-wrap: wrap; gap: 7px;
+  padding: 9px 13px; min-height: 0; border-radius: 10px; border-width: 1.5px;
+}
+#cq-stage .cq-opt:hover { transform: none; }
+#cq-stage .cq-opt-t { font-size: .95rem; line-height: 1.3; }
+#cq-stage .cq-opt-s { font-size: .76rem; line-height: 1.3; }
+#cq-stage .cq-opt.on { box-shadow: 0 3px 10px rgba(247,37,133,.25); }
+
+/* ===== 2~4순위 카드의 사진은 작게 세 장 나란히 ===== */
+.cr-photos.small { grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 8px; }
+.cr-photos.small .cr-ph:first-child { grid-column: auto; }
+.cr-photos.small .cr-ph-img,
+.cr-photos.small .cr-ph:first-child .cr-ph-img { aspect-ratio: 4 / 3; border-radius: 9px; }
+.cr-photos.small .cr-ph-img > span { font-size: .7rem; }
+.cr-photos.small figcaption { font-size: .7rem; margin-top: 4px; }
