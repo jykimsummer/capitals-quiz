@@ -272,6 +272,7 @@
     window.scrollTo({ top: 0 });
   }
   const josaGa = (w) => { const c = w.charCodeAt(w.length - 1); return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 ? "이" : "가"; };
+  const josaWa = (w) => { const c = w.charCodeAt(w.length - 1); return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 ? "과" : "와"; };
   const josa = (w) => { const c = w.charCodeAt(w.length - 1); return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 ? "은" : "는"; };
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -852,10 +853,12 @@
       const c = p.country;
       return `<article class="cr-card r${i}" style="--c1:${c.c1};--c2:${c.c2}">` +
         `<div class="cr-band">` +
-          `<span class="cr-rank">${RANK[i]}</span>` +
-          `<span class="cr-flag">${c.flag}</span>` +
-          `<span class="cr-name"><b>${esc(c.name)}</b><i>수도 · ${esc(c.cap)}</i></span>` +
-          `<span class="cr-pct"><b>${p.pct}</b><small>%</small></span>` +
+          `<div class="cr-tagline">${esc(student.name)}${josaWa(student.name)} 잘 어울리는 나라 <b>${RANK[i]}</b></div>` +
+          `<div class="cr-band-row">` +
+            `<span class="cr-flag">${c.flag}</span>` +
+            `<span class="cr-name"><b>${esc(c.name)}</b><i>수도 · ${esc(c.cap)}</i></span>` +
+            `<span class="cr-pct"><em>매칭률</em><span class="cr-pct-n"><b>${p.pct}</b><small>%</small></span></span>` +
+          `</div>` +
         `</div>` +
         photoStrip(p, i) +
         `<div class="cr-body">` +
