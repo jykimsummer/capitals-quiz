@@ -20,32 +20,23 @@
     <form id="start-form" class="card stack no-id" style="margin-top:22px" novalidate>
       <div class="grid-2">
         <div class="field">
-          <label for="section">분반</label>
-          <select id="section" name="section" required>
-            <option value="">선택</option>
-            <option value="1">1분반 (월 오전 10시~)</option>
-            <option value="2">2분반 (월 오후 1시~)</option>
-            <option value="3">3분반 (월 오후 4시~)</option>
-            <option value="4">4분반 (화 오전 10시~)</option>
-          </select>
-        </div>
-        <div class="field" id="f-week">
           <label for="week">주차</label>
-          <input id="week" name="week" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2"
-                 placeholder="숫자만 입력 ex. 5" required autocomplete="off">
-        </div>
-      </div>
-      <div class="grid-2">
-        <div class="field" id="f-sid">
-          <label for="student_id">학번</label>
-          <input id="student_id" name="student_id" placeholder="예: 20260102" required inputmode="numeric" autocomplete="off">
+          <select id="week" name="week" required>
+            <option value="">선택</option>
+            <option value="10">10주차</option>
+            <option value="11">11주차</option>
+            <option value="12">12주차</option>
+            <option value="13">13주차</option>
+            <option value="14">14주차</option>
+            <option value="15">15주차</option>
+          </select>
         </div>
         <div class="field">
           <label for="name">이름</label>
           <input id="name" name="name" placeholder="홍길동" required autocomplete="off">
         </div>
       </div>
-      <div class="field">
+      <div class="field" id="subject-pick" hidden>
         <label>무엇을 풀까요?</label>
         <div class="seg" id="subject-seg">
           <label class="seg-item"><input type="radio" name="subject" value="capital"><span>세계수도송</span></label>
@@ -58,6 +49,12 @@
         </div>
         <div class="seg" id="subject-seg-3" style="grid-template-columns:1fr;margin-top:8px">
           <label class="seg-item"><input type="radio" name="subject" value="country"><span>🌍 가고 싶은 나라 찾기<small>15문항 · 나에게 맞는 나라 4곳</small></span></label>
+        </div>
+        <div class="seg" id="subject-seg-4" hidden>
+          <label class="seg-item"><input type="radio" name="subject" value="kings"><span>👑 조선의 왕 순서<small>4덩어리 · 순서 맞추기</small></span></label>
+          <label class="seg-item"><input type="radio" name="subject" value="dynasty"><span>🏯 조선왕조 이름 맞추기<small>27명 · 조·종·군 고르기</small></span></label>
+          <label class="seg-item"><input type="radio" name="subject" value="jindallae"><span>🌸 진달래꽃<small>12줄 · 순서 맞추기</small></span></label>
+          <label class="seg-item"><input type="radio" name="subject" value="seosi"><span>⭐ 서시<small>9줄 · 순서 맞추기</small></span></label>
         </div>
         <p class="hint" id="subject-soon" hidden>등급이 아니라 지금 내 위치를 찍는 자가진단입니다. 5점 척도로 솔직하게 답하면 결과와 코멘트가 나옵니다.</p>
         <p class="hint" id="subject-country" hidden>점수가 없는 활동입니다. 15문항에 답하면 나와 가장 잘 맞는 나라 4곳을 수도·국기·음식·관광지·비행시간·사진과 함께 알려 줍니다.</p>
@@ -81,7 +78,7 @@
       <p class="err" id="start-err" hidden></p>
       <div class="toolbar">
         <button class="btn" type="submit">퀴즈 시작</button>
-        <span class="hint">분반과 이름만 입력하면 됩니다.</span>
+        <span class="hint">주차를 고르면 그 주차 활동이 나옵니다.</span>
       </div>
     </form>
   </section>
@@ -192,6 +189,46 @@
     </div>
   </section>
 
+  <!-- ===== 2-d. 끌어서 순서 맞추기 ===== -->
+  <section id="view-order" hidden>
+    <div class="sticky-head">
+      <div class="row">
+        <span class="who-line"><button type="button" class="back" id="btn-back-o">← 나가기</button><span id="od-who"></span></span>
+        <span class="count" id="od-count"></span>
+      </div>
+      <div class="sticky-title"><span class="eyebrow" style="margin:0">순서 맞추기</span><strong id="od-title"></strong></div>
+    </div>
+    <p class="hint" id="od-lead" style="margin:10px 0 12px"></p>
+    <div class="od-slots" id="od-slots" hidden></div>
+    <div class="od-pool-head" id="od-pool-head" hidden><span>아래 덩어리를 끌어 올리세요</span><span class="hint" id="od-left"></span></div>
+    <div class="od-pool" id="od-pool" hidden></div>
+    <div class="od-list" id="od-list" hidden></div>
+    <div class="od-pick" id="od-pick" hidden></div>
+    <p class="err" id="od-err" hidden></p>
+    <div class="toolbar" style="margin-top:18px">
+      <button class="btn" type="button" id="od-submit">제출</button>
+      <button class="btn ghost" type="button" id="od-reset">다시 섞기</button>
+    </div>
+    <p class="hint" id="od-credit" style="margin-top:14px"></p>
+  </section>
+
+  <!-- ===== 3-d. 순서 맞추기 결과 ===== -->
+  <section id="view-oresult" hidden>
+    <div class="eyebrow">순서 맞추기 · 결과</div>
+    <h2 id="or-title"></h2>
+    <div class="who" id="or-who" style="color:var(--ink-soft);margin:4px 0 16px"></div>
+    <div class="score-hero">
+      <div class="big"><span id="or-score"></span><small id="or-total"></small></div>
+      <div class="who" id="or-msg"></div>
+    </div>
+    <div class="section-title"><h2>내가 놓은 순서</h2><span class="hint">틀린 칸은 정답을 함께 보여 줍니다</span></div>
+    <ol class="or-list" id="or-list"></ol>
+    <div class="toolbar" style="margin-top:22px">
+      <button class="btn" type="button" id="btn-or-retry">다시 해보기</button>
+      <button class="btn ghost" type="button" id="btn-or-home">처음으로</button>
+    </div>
+  </section>
+
   <!-- ===== 3. 결과 화면 ===== -->
   <section id="view-result" hidden>
     <div class="eyebrow" id="res-eyebrow"></div>
@@ -244,6 +281,7 @@
 <script src="theory-data.js"></script>
 <script src="diag-data.js"></script>
 <script src="country-data.js"></script>
+<script src="order-data.js"></script>
 <script src="api.js"></script>
 <script>
 (function () {
@@ -263,7 +301,7 @@
   let TOTAL = 0;
   let MODE = null;
   const $ = (id) => document.getElementById(id);
-  const views = { start: $("view-start"), quiz: $("view-quiz"), result: $("view-result"), diag: $("view-diag"), dresult: $("view-dresult"), country: $("view-country"), cresult: $("view-cresult") };
+  const views = { start: $("view-start"), quiz: $("view-quiz"), result: $("view-result"), diag: $("view-diag"), dresult: $("view-dresult"), country: $("view-country"), cresult: $("view-cresult"), order: $("view-order"), oresult: $("view-oresult") };
   const DIAG = window.DIAG;
   const DIAG_KEYS = ["motivation", "style", "mindset"];
   const DIAG_LABEL = { motivation: "학습동기 유형", style: "학습스타일", mindset: "마인드셋" };
@@ -275,6 +313,27 @@
   const josaWa = (w) => { const c = w.charCodeAt(w.length - 1); return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 ? "과" : "와"; };
   const josa = (w) => { const c = w.charCodeAt(w.length - 1); return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 ? "은" : "는"; };
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  const ORDER_KEYS = ["kings", "dynasty", "jindallae", "seosi"];
+  // 11주차는 행사용 활동, 나머지 주차는 기존 수업 활동
+  function syncWeek() {
+    const w = $("week").value;
+    const is11 = w === "11";
+    $("subject-pick").hidden = !w;
+    $("subject-seg").hidden = !w || is11;
+    $("subject-seg-2").hidden = !w || is11;
+    $("subject-seg-3").hidden = !w || !is11;
+    $("subject-seg-4").hidden = !w || !is11;
+    document.querySelectorAll('input[name="subject"], input[name="mode"]').forEach((m) => { m.checked = false; });
+    $("mode-capital").hidden = true;
+    $("mode-theory").hidden = true;
+    $("subject-soon").hidden = true;
+    $("subject-country").hidden = true;
+    $("start-err").hidden = true;
+  }
+  $("week").addEventListener("change", syncWeek);
+  // 새로고침하면 브라우저가 고른 주차를 되살린다. 그때는 change 가 안 뜨므로 한 번 맞춰 준다
+  syncWeek();
 
   document.querySelectorAll('input[name="subject"]').forEach((r) => r.addEventListener("change", () => {
     const v = r.value;
@@ -293,10 +352,10 @@
   $("start-form").addEventListener("submit", (e) => {
     e.preventDefault();
     const f = e.target;
-    const week = parseInt(String(f.week.value).replace(/[^0-9]/g, ""), 10);
+    const week = parseInt(f.week.value, 10);
     const s = {
-      section: f.section.value,
-      student_id: f.student_id.value.trim(),
+      section: "-",
+      student_id: "",
       name: f.name.value.trim(),
       week: week,
     };
@@ -304,14 +363,26 @@
     const modeEl = document.querySelector('input[name="mode"]:checked');
     const subj = document.querySelector('input[name="subject"]:checked');
     // 나라찾기는 분반·이름만 받는다 (주차·학번 없이 저장되도록 기본값을 채운다)
-    if (!s.section || !s.name) {
-      err.textContent = "분반과 이름을 입력하세요.";
+    if (!week || !s.name) {
+      err.textContent = "주차를 고르고 이름을 입력하세요.";
       err.hidden = false;
       return;
     }
-    // 주차·학번은 더 이상 받지 않는다. 기록은 분반+이름으로만 남긴다
+    if (!subj) {
+      err.textContent = "무엇을 풀지 고르세요.";
+      err.hidden = false;
+      return;
+    }
+    // 학번은 받지 않는다. 기록은 주차+이름으로 남긴다
     s.student_id = s.name;
-    s.week = 0;
+    if (ORDER_KEYS.indexOf(subj.value) >= 0) {
+      err.hidden = true;
+      s.mode = "order-" + subj.value;
+      student = s;
+      startOrder(subj.value);
+      show("order");
+      return;
+    }
     if (subj && subj.value === "country") {
       err.hidden = true;
       s.mode = "country";
@@ -339,7 +410,7 @@
     student = s;
     triedSubmit = false;
     buildQuiz();
-    $("quiz-who").textContent = `${s.section}분반 · ${s.name} · ${MODE.label}`;
+    $("quiz-who").textContent = `${s.week}주차 · ${s.name} · ${MODE.label}`;
     show("quiz");
   });
 
@@ -518,7 +589,7 @@
     $("res-graded").hidden = true;
     $("res-essay").hidden = false;
     $("res-eyebrow").textContent = `${attempt.week}주차 · ${MODE.label}`;
-    $("essay-who").textContent = `${attempt.section}분반 · ${attempt.student_id} · ${attempt.name}` +
+    $("essay-who").textContent = `${attempt.week}주차 · ${attempt.name}` +
       (saveErr ? " · 저장에 실패했습니다" : window.QuizAPI.mode === "local" ? " · (연습 모드)" : " · 제출 완료");
     const ol = $("essay-list");
     ol.innerHTML = "";
@@ -540,7 +611,7 @@
     $("res-eyebrow").textContent = `${s.week}주차 결과 · ${MODE.label}`;
     $("res-score").textContent = s.score;
     $("res-total").textContent = ` / ${s.total}점`;
-    $("res-who").textContent = `${s.section}분반 · ${s.student_id} · ${s.name}`;
+    $("res-who").textContent = `${s.week}주차 · ${s.name}`;
 
     const ul = $("res-wrong");
     ul.innerHTML = "";
@@ -619,7 +690,7 @@
     const d = DIAG[key];
     DITEMS = [];
     d.factors.forEach((f) => f.items.forEach((t) => DITEMS.push({ n: DITEMS.length + 1, text: t, fkey: f.key })));
-    $("diag-who").textContent = `${student.section}분반 · ${student.name}`;
+    $("diag-who").textContent = `${student.week}주차 · ${student.name}`;
     $("diag-eyebrow").textContent = DIAG_LABEL[key] + " 진단";
     $("diag-title").textContent = d.question;
     $("diag-guide").textContent = d.guide;
@@ -690,7 +761,7 @@
     const d = DIAG[DKEY];
     $("dr-eyebrow").textContent = `${attempt.week}주차 · ${DIAG_LABEL[DKEY]} 진단 결과`;
     $("dr-title").textContent = d.question;
-    $("dr-who").textContent = `${attempt.section}분반 · ${attempt.student_id} · ${attempt.name}` + (saveErr ? " · 저장 실패" : window.QuizAPI.mode === "local" ? " · (연습 모드)" : "");
+    $("dr-who").textContent = `${attempt.week}주차 · ${attempt.name}` + (saveErr ? " · 저장 실패" : window.QuizAPI.mode === "local" ? " · (연습 모드)" : "");
     const avgs = {};
     d.factors.forEach((f) => { avgs[f.key] = scores[f.key] / f.items.length; });
     const r = d.interpret(scores, avgs);
@@ -766,7 +837,7 @@
   // 15문항을 한 페이지에 모두 깔아 두고, 내려가면서 답하게 한다
   function startCountry() {
     cqPick = {}; cqTried = false;
-    $("cq-who").textContent = `${student.section}분반 · ${student.name}`;
+    $("cq-who").textContent = `${student.week}주차 · ${student.name}`;
     $("cq-total").textContent = CQ.length;
     $("cq-err").hidden = true;
     $("cq-stage").innerHTML = CQ.map((q, i) =>
@@ -847,7 +918,7 @@
   function renderCountryResult(picks) {
     const first = picks[0].country;
     $("cr-title").textContent = `${student.name}${josa(student.name)} ${first.name}${josaGa(first.name)} 1순위!`;
-    $("cr-who").textContent = `${student.section}분반 · ${student.name} · ${CQ.length}문항 결과`;
+    $("cr-who").textContent = `${student.week}주차 · ${student.name} · ${CQ.length}문항 결과`;
     const RANK = ["1순위", "2순위", "3순위", "4순위"];
     $("cr-cards").innerHTML = picks.map((p, i) => {
       const c = p.country;
@@ -932,6 +1003,415 @@
 
   $("btn-cr-retry").addEventListener("click", () => { startCountry(); show("country"); });
   $("btn-cr-home").addEventListener("click", () => { $("start-form").reset(); show("start"); });
+
+  // ---------- 끌어서 순서 맞추기 (11주차) ----------
+  // 활동마다 방식이 다르다 (order-data.js 의 layout)
+  //   slots   : 위 빈 칸에 아래 덩어리를 끌어다 놓기        — 조선의 왕
+  //   reorder : 섞인 줄 목록에서 자리만 바꾸기 (화면이 짧다) — 진달래꽃, 서시
+  const OSETS = window.ORDER_SETS || {};
+  let OKEY = null, OSET = null, OLAY = "slots";
+  let odSel = null;
+  let odDrag = null, odGhost = null, odMoved = false, odPh = null;
+  let odSX = 0, odSY = 0, odOX = 0, odOY = 0, odW = 0, odJust = false;
+
+  const odIsSlots = () => OLAY === "slots";
+  const odIsPick = () => OLAY === "pick";
+  // 정답과 화면에 보여 줄 글자 (고르기형은 앞글자를 붙여 "태조" 처럼 보여 준다)
+  const odAnswerAt = (i) => (odIsPick() ? OSET.items[i].a : OSET.items[i]);
+  const odLabelAt = (i, v) => (odIsPick() ? OSET.items[i].q + (v || "?") : v);
+  // 결과에 파란 글씨로 붙는 설명 (대표 업적 + 조·종·군 이유)
+  const odNoteAt = (i) => (odIsPick() ? OSET.items[i].w || "" : "");
+
+  function startOrder(key) {
+    OKEY = key; OSET = OSETS[key]; OLAY = OSET.layout || "slots";
+    $("od-who").textContent = `${student.week}주차 · ${student.name}`;
+    $("od-title").textContent = OSET.label;
+    $("od-lead").textContent = OSET.lead;
+    $("od-credit").textContent = OSET.credit;
+    $("od-err").hidden = true;
+    $("od-slots").hidden = !odIsSlots();
+    $("od-pool-head").hidden = !odIsSlots();
+    $("od-pool").hidden = !odIsSlots();
+    $("od-list").hidden = odIsSlots() || odIsPick();
+    $("od-pick").hidden = !odIsPick();
+    buildOrder();
+    window.scrollTo({ top: 0 });
+  }
+
+  function shuffledItems() {
+    let arr = shuffle(OSET.items.slice());
+    if (arr.join("|") === OSET.items.join("|")) arr = shuffle(arr);  // 우연히 정답이면 다시
+    return arr;
+  }
+
+  function buildOrder() {
+    const big = OSET.big ? " big" : "";
+    if (odIsPick()) { buildPick(); odSelect(null); odSync(); return; }
+    if (odIsSlots()) {
+      const slots = $("od-slots"), pool = $("od-pool");
+      slots.className = "od-slots" + big;
+      pool.className = "od-pool" + big;
+      slots.innerHTML = "";
+      OSET.items.forEach((_, i) => {
+        const d = document.createElement("div");
+        d.className = "od-slot";
+        d.innerHTML = `<span class="od-no">${i + 1}</span>`;
+        slots.appendChild(d);
+      });
+      pool.innerHTML = "";
+      shuffledItems().forEach((t) => pool.appendChild(makeItem(t, false)));
+    } else {
+      const list = $("od-list");
+      list.className = "od-list" + big;
+      list.innerHTML = "";
+      shuffledItems().forEach((t) => list.appendChild(makeItem(t, true)));
+    }
+    odSelect(null);
+    odSync();
+  }
+
+  // 고르기형 : 앞글자 옆에 보기 버튼
+  function buildPick() {
+    const box = $("od-pick");
+    box.innerHTML = "";
+    OSET.items.forEach((it, i) => {
+      const row = document.createElement("div");
+      row.className = "od-prow";
+      row.dataset.i = i;
+      row.innerHTML =
+        `<span class="od-no">${i + 1}</span>` +
+        `<span class="od-stem"></span>` +
+        `<span class="od-opts">` +
+        OSET.choices.map((c) => `<button type="button" class="od-opt" data-v="${esc(c)}">${esc(c)}</button>`).join("") +
+        `</span>`;
+      row.querySelector(".od-stem").textContent = it.q;
+      box.appendChild(row);
+    });
+  }
+
+  $("od-pick").addEventListener("click", (e) => {
+    const b = e.target.closest(".od-opt");
+    if (!b) return;
+    b.parentNode.querySelectorAll(".od-opt").forEach((x) => x.classList.remove("on"));
+    b.classList.add("on");
+    b.closest(".od-prow").classList.remove("missing");
+    odSync();
+  });
+
+  function makeItem(t, withCtl) {
+    const r = document.createElement("div");
+    r.className = "od-item";
+    r.dataset.text = t;
+    r.innerHTML =
+      (withCtl ? `<span class="od-no"></span>` : "") +
+      `<span class="od-text"></span>` +
+      (withCtl
+        ? `<span class="od-ctl">` +
+            `<button type="button" class="od-nudge" data-d="-1" aria-label="위로">▲</button>` +
+            `<button type="button" class="od-nudge" data-d="1" aria-label="아래로">▼</button>` +
+          `</span>`
+        : "") +
+      `<span class="od-grip" aria-hidden="true">⠿</span>`;
+    r.querySelector(".od-text").textContent = t;
+    return r;
+  }
+
+  // 번호 다시 매기기 · 남은 개수 표시
+  function odSync() {
+    const n = OSET.items.length;
+    if (odIsPick()) {
+      const done = $("od-pick").querySelectorAll(".od-opt.on").length;
+      $("od-count").textContent = `${done} / ${n}`;
+      $("od-err").hidden = true;
+      return;
+    }
+    if (odIsSlots()) {
+      const filled = $("od-slots").querySelectorAll(".od-item").length;
+      $("od-count").textContent = `${filled} / ${n}`;
+      $("od-left").textContent = filled === n ? "다 놓았습니다" : `${n - filled}개 남음`;
+      $("od-slots").querySelectorAll(".od-slot").forEach((x) => {
+        x.classList.toggle("on", !!x.querySelector(".od-item"));
+      });
+    } else {
+      $("od-count").textContent = n + "줄";
+      [...$("od-list").children].forEach((r, i) => { r.querySelector(".od-no").textContent = i + 1; });
+    }
+    $("od-err").hidden = true;
+  }
+
+  function odSelect(x) {
+    if (odSel) odSel.classList.remove("sel");
+    odSel = x || null;
+    if (odSel) odSel.classList.add("sel");
+  }
+
+  // --- slots 방식 ---
+  function odPlace(item, target) {
+    if (!item || !target) return;
+    const from = item.parentNode;
+    if (target === from) { odSelect(null); return; }
+    if (target.id === "od-pool") {
+      target.appendChild(item);
+    } else {
+      const taken = target.querySelector(".od-item");
+      target.appendChild(item);
+      if (taken) {
+        if (from.classList.contains("od-slot")) from.appendChild(taken);
+        else $("od-pool").appendChild(taken);
+      }
+    }
+    odSelect(null);
+    odSync();
+  }
+
+  // --- reorder 방식 ---
+  function odNudge(row, d) {
+    const list = $("od-list"), rows = [...list.children];
+    const i = rows.indexOf(row), j = i + d;
+    if (j < 0 || j >= rows.length) return;
+    if (d < 0) list.insertBefore(row, rows[j]);
+    else list.insertBefore(rows[j], row);
+    odSync();
+    row.classList.remove("flash"); void row.offsetWidth; row.classList.add("flash");
+  }
+  function odSwap(x, y) {
+    if (!x || !y || x === y) return;
+    const list = x.parentNode;
+    const after = x.nextSibling === y ? x : x.nextSibling;
+    list.insertBefore(x, y);
+    list.insertBefore(y, after);
+    odSync();
+  }
+  function odInsert(row, target, y) {
+    if (!target || target === row) return;
+    const list = $("od-list");
+    const r = target.getBoundingClientRect();
+    if (y < r.top + r.height / 2) list.insertBefore(row, target);
+    else list.insertBefore(row, target.nextSibling);
+    odSync();
+  }
+
+  // --- 끌기 (두 방식 공통) ---
+  function odUnder(x, y) {
+    if (odGhost) odGhost.style.display = "none";
+    const el = document.elementFromPoint(x, y);
+    if (odGhost) odGhost.style.display = "";
+    if (!el) return null;
+    return odIsSlots()
+      ? (el.closest(".od-slot") || el.closest("#od-pool"))
+      : el.closest(".od-item");
+  }
+  function odClearHover() {
+    document.querySelectorAll(".over, .over-top").forEach((e) => e.classList.remove("over", "over-top"));
+  }
+
+  function odPtrDown(e) {
+    const item = e.target.closest(".od-item");
+    if (!item || e.target.closest(".od-nudge")) return;
+    // 폰에서는 손잡이에서만 끌기 시작 (그래야 화면 스크롤이 막히지 않는다)
+    if (!e.target.closest(".od-grip") && e.pointerType !== "mouse") return;
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    odDrag = item; odMoved = false;
+    odSX = e.clientX; odSY = e.clientY;
+    const r = item.getBoundingClientRect();
+    odOX = e.clientX - r.left; odOY = e.clientY - r.top; odW = r.width;
+  }
+
+  // 끄는 동안 번호를 실시간으로 다시 매긴다 (점선 칸이 그 자리를 차지한 것으로 센다)
+  function odRenumberLive() {
+    let n = 0;
+    [...$("od-list").children].forEach((c) => {
+      if (c === odDrag) return;                       // 자리에서 뺀 원본은 건너뛴다
+      n++;
+      if (c === odPh) {                               // 점선 칸 번호는 따라다니는 상자에 보여 준다
+        if (odGhost) { const g = odGhost.querySelector(".od-no"); if (g) g.textContent = n; }
+        return;
+      }
+      const el = c.querySelector(".od-no");
+      if (el) el.textContent = n;
+    });
+  }
+
+  function odPtrMove(e) {
+    if (!odDrag) return;
+    if (!odMoved) {
+      if (Math.abs(e.clientX - odSX) + Math.abs(e.clientY - odSY) < 8) return;
+      odMoved = true;
+      const r = odDrag.getBoundingClientRect();
+      odGhost = odDrag.cloneNode(true);
+      odGhost.className = "od-item ghost";
+      odGhost.style.width = odW + "px";
+      document.body.appendChild(odGhost);
+      odSelect(null);
+      if (odIsSlots()) {
+        odDrag.classList.add("moving");
+      } else {
+        // 끌어낸 줄은 자리에서 빼고, 그 자리에 점선 칸을 만든다.
+        // 이 점선 칸이 따라다니면서 아래 줄들을 밀어내므로 어디에 들어갈지 바로 보인다
+        odPh = document.createElement("div");
+        odPh.className = "od-ph";
+        odPh.style.height = r.height + "px";
+        odDrag.parentNode.insertBefore(odPh, odDrag);
+        odDrag.style.display = "none";
+        const ctl = odGhost.querySelector(".od-ctl");
+        if (ctl) ctl.remove();                        // 따라다니는 상자에는 ▲▼ 를 빼 둔다
+        odRenumberLive();
+      }
+    }
+    e.preventDefault();
+    odGhost.style.left = (e.clientX - odOX) + "px";
+    odGhost.style.top = (e.clientY - odOY) + "px";
+    const t = odUnder(e.clientX, e.clientY);
+    if (odPh) {
+      if (t) {
+        const r = t.getBoundingClientRect();
+        const list = $("od-list");
+        if (e.clientY < r.top + r.height / 2) list.insertBefore(odPh, t);
+        else list.insertBefore(odPh, t.nextSibling);
+        odRenumberLive();
+      }
+      return;
+    }
+    odClearHover();
+    if (t && t !== odDrag) t.classList.add("over");
+  }
+
+  // 끌기 흔적(따라다니던 상자·점선 칸·흐려진 원본) 정리
+  function odCleanDrag(item) {
+    if (odGhost) { odGhost.remove(); odGhost = null; }
+    if (odPh) { odPh.remove(); odPh = null; }
+    if (item) { item.classList.remove("moving"); item.style.display = ""; }
+    odClearHover();
+  }
+
+  function odPtrUp(e) {
+    if (!odDrag) return;
+    const item = odDrag; odDrag = null;
+    // 중간 이동 신호 없이 멀리서 손을 뗀 경우(빠른 플릭)도 끌기로 본다
+    const far = Math.abs(e.clientX - odSX) + Math.abs(e.clientY - odSY) >= 8;
+    if (!odMoved && !far) { odCleanDrag(item); return; }
+    const t = odUnder(e.clientX, e.clientY);
+    odJust = true;
+    setTimeout(() => { odJust = false; }, 80);
+    if (odPh) {                       // 점선 칸이 있던 자리에 그대로 넣는다
+      $("od-list").insertBefore(item, odPh);
+      odCleanDrag(item);
+      odSync();
+      item.classList.remove("flash"); void item.offsetWidth; item.classList.add("flash");
+      return;
+    }
+    odCleanDrag(item);
+    if (!t) return;
+    if (odIsSlots()) odPlace(item, t);
+    else if (OSET.big) odSwap(item, t);
+    else odInsert(item, t, e.clientY);
+  }
+
+  ["od-slots", "od-pool", "od-list"].forEach((id) => $(id).addEventListener("pointerdown", odPtrDown));
+  window.addEventListener("pointermove", odPtrMove, { passive: false });
+  window.addEventListener("pointerup", odPtrUp);
+  window.addEventListener("pointercancel", odPtrUp);
+
+  // --- 톡 눌러 옮기기 ---
+  function odClick(e) {
+    const nudge = e.target.closest(".od-nudge");
+    if (nudge) { odNudge(nudge.closest(".od-item"), parseInt(nudge.dataset.d, 10)); return; }
+    if (odJust) return;
+    const item = e.target.closest(".od-item");
+    if (odIsSlots()) {
+      const slot = e.target.closest(".od-slot");
+      if (item) {
+        if (odSel && odSel !== item) odPlace(odSel, slot || $("od-pool"));
+        else odSelect(odSel === item ? null : item);
+        return;
+      }
+      if (slot) { if (odSel) odPlace(odSel, slot); return; }
+      if (odSel && e.currentTarget.id === "od-pool") odPlace(odSel, $("od-pool"));
+      return;
+    }
+    if (!item) return;
+    if (odSel && odSel !== item) { odSwap(odSel, item); odSelect(null); }
+    else odSelect(odSel === item ? null : item);
+  }
+  ["od-slots", "od-pool", "od-list"].forEach((id) => $(id).addEventListener("click", odClick));
+
+  $("od-reset").addEventListener("click", () => { buildOrder(); window.scrollTo({ top: 0 }); });
+  $("btn-back-o").addEventListener("click", () => {
+    if (!confirm("지금까지 맞춘 것은 사라집니다. 처음 화면으로 돌아갈까요?")) return;
+    show("start");
+  });
+
+  // 결과는 오직 이 버튼을 눌렀을 때만 나온다
+  $("od-submit").addEventListener("click", async () => {
+    let mine;
+    if (odIsPick()) {
+      const rows = [...$("od-pick").querySelectorAll(".od-prow")];
+      mine = rows.map((r) => { const b = r.querySelector(".od-opt.on"); return b ? b.dataset.v : null; });
+      const empty = mine.filter((x) => x === null).length;
+      if (empty) {
+        $("od-err").textContent = `아직 ${empty}개를 안 골랐습니다. 빨간 점선 줄을 채워 주세요.`;
+        $("od-err").hidden = false;
+        rows.forEach((r, i) => { if (mine[i] === null) r.classList.add("missing"); });
+        const first = rows.filter((r) => r.classList.contains("missing"))[0];
+        if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+    } else if (odIsSlots()) {
+      const slots = [...$("od-slots").querySelectorAll(".od-slot")];
+      mine = slots.map((x) => { const b = x.querySelector(".od-item"); return b ? b.dataset.text : null; });
+      const empty = mine.filter((x) => x === null).length;
+      if (empty) {
+        $("od-err").textContent = `아직 ${empty}칸이 비었습니다. 남은 덩어리를 모두 올려 주세요.`;
+        $("od-err").hidden = false;
+        const first = slots.filter((x) => !x.querySelector(".od-item"))[0];
+        if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+    } else {
+      mine = [...$("od-list").children].map((r) => r.dataset.text);
+    }
+    $("od-err").hidden = true;
+    // 같은 글이 두 번 나오는 줄이 있으므로 덩어리가 아니라 글자로 견준다
+    const ok = OSET.items.map((_, i) => mine[i] === odAnswerAt(i));
+    const score = ok.filter(Boolean).length;
+    renderOrderResult(mine, ok, score);
+    show("oresult");
+
+    const answers = {};
+    mine.forEach((t, i) => { answers[(i + 1) + "번"] = odLabelAt(i, t); });
+    const wrong = [];
+    ok.forEach((good, i) => {
+      if (!good) wrong.push({ country: (i + 1) + "번", answer: odLabelAt(i, odAnswerAt(i)), chosen: odLabelAt(i, mine[i]) });
+    });
+    try {
+      await window.QuizAPI.saveAttempt(Object.assign({}, student, {
+        mode: "order-" + OKEY, score: score, total: OSET.items.length, wrong: wrong, answers: answers,
+      }));
+    } catch (ex) { console.error(ex); }
+  });
+
+  function renderOrderResult(mine, ok, score) {
+    const n = OSET.items.length;
+    $("or-title").textContent = OSET.label;
+    $("or-who").textContent = `${student.week}주차 · ${student.name}`;
+    $("or-score").textContent = score;
+    $("or-total").textContent = " / " + n;
+    $("or-msg").textContent = score === n
+      ? (odIsPick() ? "전부 정답! 완벽합니다." : "전부 제자리! 완벽합니다.")
+      : odIsPick()
+        ? `${n - score}개를 다르게 골랐습니다. 아래에서 확인해 보세요.`
+        : `${n - score}개가 제자리가 아닙니다. 아래에서 확인해 보세요.`;
+    $("or-list").innerHTML = mine.map((t, i) =>
+      `<li class="or-row ${ok[i] ? "ok" : "no"}">` +
+      `<span class="or-no">${i + 1}</span>` +
+      `<span class="or-body"><span class="or-txt">${esc(odLabelAt(i, t))}</span>` +
+      (ok[i] ? "" : `<span class="or-fix">정답 · ${esc(odLabelAt(i, odAnswerAt(i)))}</span>`) +
+      (odNoteAt(i) ? `<span class="or-note">${esc(odNoteAt(i))}</span>` : "") +
+      `</span><span class="or-mark">${ok[i] ? "O" : "X"}</span></li>`).join("");
+  }
+
+  $("btn-or-retry").addEventListener("click", () => { startOrder(OKEY); show("order"); });
+  $("btn-or-home").addEventListener("click", () => { $("start-form").reset(); syncWeek(); show("start"); });
 
   // ---------- 격려 메시지 ----------
   const CHEERS = {

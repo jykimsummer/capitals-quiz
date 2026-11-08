@@ -52,6 +52,7 @@
           <option value="style">학습스타일 진단</option>
           <option value="mindset">마인드셋 진단</option>
           <option value="country">가고 싶은 나라 찾기</option>
+          <option value="order">순서 맞추기 (전체)</option>
           <option value="">전체 (섞여서 보임)</option>
         </select>
       </div>
@@ -127,12 +128,13 @@
     "theory-mc": "이론 객관식", "theory-text": "이론 주관식",
     motivation: "학습동기", style: "학습스타일", mindset: "마인드셋",
     country: "나라찾기",
+    "order-kings": "조선왕순서", "order-dynasty": "조선왕이름", "order-jindallae": "진달래꽃", "order-seosi": "서시",
   };
   // 유형 필터: capital / theory 는 방식 전체를 묶고, 진단 3종은 각각
   function inMode(r, sel) {
     const m = r.mode || "capital-mc";
     if (!sel) return true;
-    if (sel === "capital" || sel === "theory") return m.startsWith(sel + "-");
+    if (sel === "capital" || sel === "theory" || sel === "order") return m.startsWith(sel + "-");
     return m === sel;
   }
   function filtered() {

@@ -517,3 +517,154 @@ footer { margin-top: 40px; color: var(--muted); font-size: 0.8rem; text-align: c
   color: rgba(255,255,255,.85); letter-spacing: .02em; line-height: 1;
 }
 .cr-pct-n { display: flex; align-items: baseline; gap: 1px; }
+
+/* ===================== 끌어서 순서 맞추기 (11주차) ===================== */
+/* --- 공통 덩어리 --- */
+.od-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 8px 8px 10px; border-radius: 10px;
+  background: #fff; border: 1.5px solid var(--line);
+  box-shadow: 0 1px 3px rgba(30,47,77,.06);
+  font-size: .96rem; line-height: 1.35; color: var(--ink);
+  user-select: none; -webkit-user-select: none;
+}
+.od-text { flex: 1 1 auto; min-width: 0; }
+.od-no {
+  flex: none; width: 23px; height: 23px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: .73rem; font-weight: 700; color: #fff; background: var(--ink);
+}
+.od-ctl { flex: none; display: flex; gap: 3px; }
+.od-nudge {
+  font: inherit; font-size: .72rem; line-height: 1; cursor: pointer;
+  width: 30px; height: 30px; border-radius: 8px; padding: 0;
+  border: 1.5px solid var(--line); background: var(--paper); color: var(--ink-soft);
+}
+.od-nudge:hover { background: #fff; border-color: var(--ink); color: var(--ink); }
+.od-grip {
+  flex: none; font-size: 1.1rem; line-height: 1; color: var(--muted);
+  padding: 7px 5px; margin: -7px -2px -7px 0; cursor: grab;
+  touch-action: none;             /* 손잡이에서만 끌기 — 나머지는 스크롤 그대로 */
+}
+.od-item.sel {
+  border-color: var(--stamp); background: var(--stamp-soft);
+  box-shadow: 0 0 0 3px rgba(194,69,45,.15);
+}
+.od-item.moving { opacity: .3; }
+.od-item.ghost {
+  position: fixed; z-index: 90; pointer-events: none; margin: 0;
+  box-shadow: 0 10px 26px rgba(30,47,77,.28); transform: rotate(-1deg);
+  border-color: var(--ink); background: #fff;
+}
+@keyframes odFlash { from { background: var(--sea-soft); } to { background: #fff; } }
+.od-item.flash { animation: odFlash .5s ease; }
+
+/* --- 방식 1 : 위 빈 칸 + 아래 덩어리 (조선의 왕) --- */
+.od-slots { display: grid; gap: 7px; margin-bottom: 18px; }
+.od-slots.big, .od-pool.big { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.od-slot {
+  display: flex; align-items: center; gap: 9px; min-height: 52px;
+  padding: 4px 4px 4px 10px; border-radius: 11px;
+  border: 2px dashed var(--line); background: #fff;
+}
+.od-slots.big .od-slot { position: relative; justify-content: center; padding: 4px; min-height: 62px; }
+.od-slots.big .od-no { position: absolute; top: 5px; left: 6px; width: 20px; height: 20px; font-size: .67rem; z-index: 1; }
+.od-slot.on { border-style: solid; border-color: transparent; background: transparent; padding: 0; }
+.od-slots.big .od-slot.on { padding: 0; }
+.od-slot.over { border-color: var(--sea); background: var(--sea-soft); }
+.od-slot .od-item { flex: 1 1 auto; border-color: var(--ink); box-shadow: 0 2px 7px rgba(30,47,77,.12); }
+
+.od-pool-head {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+  font-size: .82rem; font-weight: 600; color: var(--ink-soft); margin-bottom: 7px;
+}
+.od-pool {
+  display: grid; gap: 7px; min-height: 58px; padding: 9px; border-radius: 13px;
+  background: var(--paper-2); border: 1.5px solid var(--line);
+}
+.od-pool.over { border-color: var(--sea); background: var(--sea-soft); }
+/* 짧은 덩어리는 글씨를 크게, 가운데로 */
+.od-slots.big .od-item, .od-pool.big .od-item {
+  justify-content: center; text-align: center; gap: 4px;
+  font-size: 1.02rem; font-weight: 700; letter-spacing: 0; padding: 12px 6px;
+}
+/* 7글자 구결이 두 줄로 깨지지 않게 */
+.od-slots.big .od-text, .od-pool.big .od-text { flex: 0 1 auto; white-space: nowrap; }
+.od-slots.big .od-grip, .od-pool.big .od-grip { font-size: .92rem; padding: 6px 2px; margin: -6px -1px -6px 0; }
+.od-slots.big .od-item.over, .od-pool.big .od-item.over { box-shadow: 0 0 0 3px var(--sea); }
+
+/* --- 방식 2 : 섞인 줄 목록에서 자리 바꾸기 (진달래꽃·서시) --- */
+.od-list { display: grid; gap: 6px; }
+.od-item.over { box-shadow: inset 0 -3px 0 0 var(--sea); }
+.od-item.over-top { box-shadow: inset 0 3px 0 0 var(--sea); }
+
+/* --- 채점 결과 --- */
+.or-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+.or-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 11px 13px; border-radius: 11px; background: #fff;
+  border: 1.5px solid var(--line);
+}
+.or-row.ok { border-color: var(--sea); background: var(--sea-soft); }
+.or-row.no { border-color: var(--stamp); background: #fffaf8; }
+.or-no {
+  flex: none; width: 23px; height: 23px; border-radius: 50%; margin-top: 1px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: .74rem; font-weight: 700; color: #fff; background: var(--ink);
+}
+.or-body { flex: 1 1 auto; min-width: 0; }
+.or-txt { display: block; font-size: .97rem; line-height: 1.4; }
+.or-fix { display: block; margin-top: 3px; font-size: .84rem; font-weight: 600; color: var(--stamp); }
+/* 결과 아래 파란 설명 줄 — 대표 업적과 조·종·군 이유 */
+.or-note {
+  display: block; margin-top: 4px; font-size: .83rem; line-height: 1.5;
+  color: #1b5fb5; font-weight: 500;
+}
+.or-row.no .or-note { border-top: 1px dashed #bdd4ef; padding-top: 4px; }
+.or-mark { flex: none; font-weight: 700; font-size: 1rem; }
+.or-row.ok .or-mark { color: var(--sea); }
+.or-row.no .or-mark { color: var(--stamp); }
+
+/* 끌 때 '여기 들어갑니다' 하고 열리는 점선 칸 */
+.od-ph {
+  box-sizing: border-box; border-radius: 10px;
+  border: 2px dashed var(--sea); background: var(--sea-soft);
+  animation: odPh .9s ease-in-out infinite;
+}
+@keyframes odPh {
+  0%, 100% { background: var(--sea-soft); border-color: var(--sea); }
+  50%      { background: #fff;            border-color: rgba(31,122,109,.45); }
+}
+/* 끌리는 상자는 손끝에서 살짝 떠 보이게 */
+.od-item.ghost { opacity: .95; transform: rotate(-1.2deg) scale(1.02); }
+/* 빈 칸(조선의 왕)에 올렸을 때도 점선으로 또렷하게 */
+.od-slot.over {
+  border-color: var(--sea); border-style: dashed; background: var(--sea-soft);
+  box-shadow: 0 0 0 3px rgba(31,122,109,.18);
+}
+
+/* --- 방식 3 : 앞글자 옆에서 조·종·군 고르기 --- */
+.od-pick { display: grid; gap: 5px; }
+@media (min-width: 620px) { .od-pick { grid-template-columns: 1fr 1fr; gap: 5px 14px; } }
+.od-prow {
+  display: flex; align-items: center; gap: 9px;
+  padding: 5px 7px 5px 9px; border-radius: 10px;
+  background: #fff; border: 1.5px solid var(--line);
+}
+.od-prow.missing { border: 2px dashed var(--stamp); background: #fffaf8; }
+.od-stem {
+  flex: 1 1 auto; min-width: 0;
+  font-family: var(--font-display); font-weight: 700;
+  font-size: 1.22rem; letter-spacing: .02em; color: var(--ink);
+}
+.od-opts { flex: none; display: flex; gap: 4px; }
+.od-opt {
+  font: inherit; font-weight: 700; font-size: .92rem; cursor: pointer;
+  width: 40px; height: 36px; padding: 0; border-radius: 9px;
+  border: 1.5px solid var(--line); background: var(--paper); color: var(--ink-soft);
+}
+.od-opt:hover { border-color: var(--ink); color: var(--ink); background: #fff; }
+.od-opt.on {
+  background: var(--ink); border-color: var(--ink); color: #fff;
+  box-shadow: 0 2px 6px rgba(30,47,77,.2);
+}
