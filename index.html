@@ -18,39 +18,28 @@
     <p class="lede">우리는 자랑스러운 정화예술인! 외울 수 있다!</p>
 
     <form id="start-form" class="card stack no-id" style="margin-top:22px" novalidate>
-      <div class="grid-2">
-        <div class="field">
-          <label for="week">주차</label>
-          <select id="week" name="week" required>
-            <option value="">선택</option>
-            <option value="10">10주차</option>
-            <option value="11">11주차</option>
-            <option value="12">12주차</option>
-            <option value="13">13주차</option>
-            <option value="14">14주차</option>
-            <option value="15">15주차</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="name">이름</label>
-          <input id="name" name="name" placeholder="홍길동" required autocomplete="off">
-        </div>
+      <div class="field">
+        <label for="name">이름</label>
+        <input id="name" name="name" placeholder="홍길동" required autocomplete="off">
       </div>
-      <div class="field" id="subject-pick" hidden>
+      <div class="field" id="subject-pick">
         <label>무엇을 풀까요?</label>
+        <div class="seg-head">암기 퀴즈</div>
         <div class="seg" id="subject-seg">
           <label class="seg-item"><input type="radio" name="subject" value="capital"><span>세계수도송</span></label>
           <label class="seg-item"><input type="radio" name="subject" value="theory"><span>수업이론</span></label>
         </div>
+        <div class="seg-head">자가진단</div>
         <div class="seg seg-3" id="subject-seg-2">
           <label class="seg-item"><input type="radio" name="subject" value="motivation"><span>학습동기 유형<small>20문항 · 진단</small></span></label>
           <label class="seg-item"><input type="radio" name="subject" value="style"><span>학습스타일<small>12문항 · 진단</small></span></label>
           <label class="seg-item"><input type="radio" name="subject" value="mindset"><span>마인드셋<small>12문항 · 진단</small></span></label>
         </div>
-        <div class="seg" id="subject-seg-3" style="grid-template-columns:1fr;margin-top:8px">
+        <div class="seg-head">활동</div>
+        <div class="seg" id="subject-seg-3" style="grid-template-columns:1fr">
           <label class="seg-item"><input type="radio" name="subject" value="country"><span>🌍 가고 싶은 나라 찾기<small>15문항 · 나에게 맞는 나라 4곳</small></span></label>
         </div>
-        <div class="seg" id="subject-seg-4" hidden>
+        <div class="seg" id="subject-seg-4" style="margin-top:8px">
           <label class="seg-item"><input type="radio" name="subject" value="kings"><span>👑 조선의 왕 순서<small>4덩어리 · 순서 맞추기</small></span></label>
           <label class="seg-item"><input type="radio" name="subject" value="dynasty"><span>🏯 조선왕조 이름 맞추기<small>27명 · 조·종·군 고르기</small></span></label>
           <label class="seg-item"><input type="radio" name="subject" value="jindallae"><span>🌸 진달래꽃<small>12줄 · 순서 맞추기</small></span></label>
@@ -78,7 +67,7 @@
       <p class="err" id="start-err" hidden></p>
       <div class="toolbar">
         <button class="btn" type="submit">퀴즈 시작</button>
-        <span class="hint">주차를 고르면 그 주차 활동이 나옵니다.</span>
+        <span class="hint">이름을 쓰고 풀고 싶은 것을 고르세요.</span>
       </div>
     </form>
   </section>
@@ -200,7 +189,7 @@
     </div>
     <p class="hint" id="od-lead" style="margin:10px 0 12px"></p>
     <div class="od-slots" id="od-slots" hidden></div>
-    <div class="od-pool-head" id="od-pool-head" hidden><span>아래 덩어리를 끌어 올리세요</span><span class="hint" id="od-left"></span></div>
+    <div class="od-pool-head" id="od-pool-head" hidden><span>아래 덩어리를 눌러 올리세요</span><span class="hint" id="od-left"></span></div>
     <div class="od-pool" id="od-pool" hidden></div>
     <div class="od-list" id="od-list" hidden></div>
     <div class="od-pick" id="od-pick" hidden></div>
@@ -315,15 +304,8 @@
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
   const ORDER_KEYS = ["kings", "dynasty", "jindallae", "seosi"];
-  // 11주차는 행사용 활동, 나머지 주차는 기존 수업 활동
+  // 활동은 모두 한 화면에 보여 준다. 처음 화면으로 돌아올 때 고른 것만 지운다
   function syncWeek() {
-    const w = $("week").value;
-    const is11 = w === "11";
-    $("subject-pick").hidden = !w;
-    $("subject-seg").hidden = !w || is11;
-    $("subject-seg-2").hidden = !w || is11;
-    $("subject-seg-3").hidden = !w || !is11;
-    $("subject-seg-4").hidden = !w || !is11;
     document.querySelectorAll('input[name="subject"], input[name="mode"]').forEach((m) => { m.checked = false; });
     $("mode-capital").hidden = true;
     $("mode-theory").hidden = true;
@@ -331,9 +313,6 @@
     $("subject-country").hidden = true;
     $("start-err").hidden = true;
   }
-  $("week").addEventListener("change", syncWeek);
-  // 새로고침하면 브라우저가 고른 주차를 되살린다. 그때는 change 가 안 뜨므로 한 번 맞춰 준다
-  syncWeek();
 
   document.querySelectorAll('input[name="subject"]').forEach((r) => r.addEventListener("change", () => {
     const v = r.value;
@@ -352,19 +331,18 @@
   $("start-form").addEventListener("submit", (e) => {
     e.preventDefault();
     const f = e.target;
-    const week = parseInt(f.week.value, 10);
     const s = {
       section: "-",
       student_id: "",
       name: f.name.value.trim(),
-      week: week,
+      week: 0,                 // 주차는 받지 않는다 (기록은 활동 종류로 구분)
     };
     const err = $("start-err");
     const modeEl = document.querySelector('input[name="mode"]:checked');
     const subj = document.querySelector('input[name="subject"]:checked');
-    // 나라찾기는 분반·이름만 받는다 (주차·학번 없이 저장되도록 기본값을 채운다)
-    if (!week || !s.name) {
-      err.textContent = "주차를 고르고 이름을 입력하세요.";
+    // 주차·분반·학번 없이 이름만 받는다
+    if (!s.name) {
+      err.textContent = "이름을 입력하세요.";
       err.hidden = false;
       return;
     }
@@ -373,7 +351,7 @@
       err.hidden = false;
       return;
     }
-    // 학번은 받지 않는다. 기록은 주차+이름으로 남긴다
+    // 학번은 받지 않는다. 기록은 이름으로 남긴다
     s.student_id = s.name;
     if (ORDER_KEYS.indexOf(subj.value) >= 0) {
       err.hidden = true;
@@ -410,7 +388,7 @@
     student = s;
     triedSubmit = false;
     buildQuiz();
-    $("quiz-who").textContent = `${s.week}주차 · ${s.name} · ${MODE.label}`;
+    $("quiz-who").textContent = `${s.name} · ${MODE.label}`;
     show("quiz");
   });
 
@@ -588,8 +566,8 @@
   function renderEssay(attempt, saveErr) {
     $("res-graded").hidden = true;
     $("res-essay").hidden = false;
-    $("res-eyebrow").textContent = `${attempt.week}주차 · ${MODE.label}`;
-    $("essay-who").textContent = `${attempt.week}주차 · ${attempt.name}` +
+    $("res-eyebrow").textContent = `${MODE.label}`;
+    $("essay-who").textContent = `${attempt.name}` +
       (saveErr ? " · 저장에 실패했습니다" : window.QuizAPI.mode === "local" ? " · (연습 모드)" : " · 제출 완료");
     const ol = $("essay-list");
     ol.innerHTML = "";
@@ -608,10 +586,10 @@
     $("res-graded").hidden = false;
     $("res-essay").hidden = true;
     const s = attempt;
-    $("res-eyebrow").textContent = `${s.week}주차 결과 · ${MODE.label}`;
+    $("res-eyebrow").textContent = `${MODE.label} 결과`;
     $("res-score").textContent = s.score;
     $("res-total").textContent = ` / ${s.total}점`;
-    $("res-who").textContent = `${s.week}주차 · ${s.name}`;
+    $("res-who").textContent = `${s.name}`;
 
     const ul = $("res-wrong");
     ul.innerHTML = "";
@@ -690,7 +668,7 @@
     const d = DIAG[key];
     DITEMS = [];
     d.factors.forEach((f) => f.items.forEach((t) => DITEMS.push({ n: DITEMS.length + 1, text: t, fkey: f.key })));
-    $("diag-who").textContent = `${student.week}주차 · ${student.name}`;
+    $("diag-who").textContent = `${student.name}`;
     $("diag-eyebrow").textContent = DIAG_LABEL[key] + " 진단";
     $("diag-title").textContent = d.question;
     $("diag-guide").textContent = d.guide;
@@ -759,9 +737,9 @@
 
   function renderDiagResult(attempt, vals, scores, history, saveErr) {
     const d = DIAG[DKEY];
-    $("dr-eyebrow").textContent = `${attempt.week}주차 · ${DIAG_LABEL[DKEY]} 진단 결과`;
+    $("dr-eyebrow").textContent = `${DIAG_LABEL[DKEY]} 진단 결과`;
     $("dr-title").textContent = d.question;
-    $("dr-who").textContent = `${attempt.week}주차 · ${attempt.name}` + (saveErr ? " · 저장 실패" : window.QuizAPI.mode === "local" ? " · (연습 모드)" : "");
+    $("dr-who").textContent = `${attempt.name}` + (saveErr ? " · 저장 실패" : window.QuizAPI.mode === "local" ? " · (연습 모드)" : "");
     const avgs = {};
     d.factors.forEach((f) => { avgs[f.key] = scores[f.key] / f.items.length; });
     const r = d.interpret(scores, avgs);
@@ -837,7 +815,7 @@
   // 15문항을 한 페이지에 모두 깔아 두고, 내려가면서 답하게 한다
   function startCountry() {
     cqPick = {}; cqTried = false;
-    $("cq-who").textContent = `${student.week}주차 · ${student.name}`;
+    $("cq-who").textContent = `${student.name}`;
     $("cq-total").textContent = CQ.length;
     $("cq-err").hidden = true;
     $("cq-stage").innerHTML = CQ.map((q, i) =>
@@ -918,7 +896,7 @@
   function renderCountryResult(picks) {
     const first = picks[0].country;
     $("cr-title").textContent = `${student.name}${josa(student.name)} ${first.name}${josaGa(first.name)} 1순위!`;
-    $("cr-who").textContent = `${student.week}주차 · ${student.name} · ${CQ.length}문항 결과`;
+    $("cr-who").textContent = `${student.name} · ${CQ.length}문항 결과`;
     const RANK = ["1순위", "2순위", "3순위", "4순위"];
     $("cr-cards").innerHTML = picks.map((p, i) => {
       const c = p.country;
@@ -1024,7 +1002,7 @@
 
   function startOrder(key) {
     OKEY = key; OSET = OSETS[key]; OLAY = OSET.layout || "slots";
-    $("od-who").textContent = `${student.week}주차 · ${student.name}`;
+    $("od-who").textContent = `${student.name}`;
     $("od-title").textContent = OSET.label;
     $("od-lead").textContent = OSET.lead;
     $("od-credit").textContent = OSET.credit;
@@ -1060,6 +1038,7 @@
       });
       pool.innerHTML = "";
       shuffledItems().forEach((t) => pool.appendChild(makeItem(t, false)));
+      odArm(null);
     } else {
       const list = $("od-list");
       list.className = "od-list" + big;
@@ -1111,7 +1090,7 @@
             `<button type="button" class="od-nudge" data-d="1" aria-label="아래로">▼</button>` +
           `</span>`
         : "") +
-      `<span class="od-grip" aria-hidden="true">⠿</span>`;
+      `<span class="od-grip" role="button" aria-label="끌어 옮기기" title="여기를 꾹 눌러 끄세요">⠿</span>`;
     r.querySelector(".od-text").textContent = t;
     return r;
   }
@@ -1137,6 +1116,16 @@
       [...$("od-list").children].forEach((r, i) => { r.querySelector(".od-no").textContent = i + 1; });
     }
     $("od-err").hidden = true;
+  }
+
+  // 가장 앞의 빈 칸
+  function odFirstEmpty() {
+    return [...$("od-slots").querySelectorAll(".od-slot")].find((x) => !x.querySelector(".od-item")) || null;
+  }
+  // 빈 칸을 먼저 눌러 두면 다음에 누르는 덩어리가 그 칸으로 들어간다
+  function odArm(slot) {
+    $("od-slots").querySelectorAll(".od-slot.armed").forEach((x) => x.classList.remove("armed"));
+    if (slot) slot.classList.add("armed");
   }
 
   function odSelect(x) {
@@ -1302,7 +1291,7 @@
     }
     odCleanDrag(item);
     if (!t) return;
-    if (odIsSlots()) odPlace(item, t);
+    if (odIsSlots()) { odArm(null); odPlace(item, t); }
     else if (OSET.big) odSwap(item, t);
     else odInsert(item, t, e.clientY);
   }
@@ -1321,12 +1310,20 @@
     if (odIsSlots()) {
       const slot = e.target.closest(".od-slot");
       if (item) {
-        if (odSel && odSel !== item) odPlace(odSel, slot || $("od-pool"));
-        else odSelect(odSel === item ? null : item);
+        // 칸에 들어가 있는 덩어리를 누르면 아래로 되돌린다
+        if (item.parentNode.classList.contains("od-slot")) { odArm(null); odPlace(item, $("od-pool")); return; }
+        // 아래 덩어리를 누르면 골라 둔 칸, 없으면 가장 앞 빈 칸으로 들어간다
+        const t = $("od-slots").querySelector(".od-slot.armed") || odFirstEmpty();
+        odArm(null);
+        if (t) odPlace(item, t);
         return;
       }
-      if (slot) { if (odSel) odPlace(odSel, slot); return; }
-      if (odSel && e.currentTarget.id === "od-pool") odPlace(odSel, $("od-pool"));
+      if (slot) {
+        const got = slot.querySelector(".od-item");
+        if (got) { odArm(null); odPlace(got, $("od-pool")); return; }
+        odArm(slot.classList.contains("armed") ? null : slot);
+        return;
+      }
       return;
     }
     if (!item) return;
@@ -1393,7 +1390,7 @@
   function renderOrderResult(mine, ok, score) {
     const n = OSET.items.length;
     $("or-title").textContent = OSET.label;
-    $("or-who").textContent = `${student.week}주차 · ${student.name}`;
+    $("or-who").textContent = `${student.name}`;
     $("or-score").textContent = score;
     $("or-total").textContent = " / " + n;
     $("or-msg").textContent = score === n

@@ -179,7 +179,7 @@
     // 표
     const t = $("pivot");
     let html = `<thead><tr><th>분반</th><th>학번</th><th>이름</th>` +
-      weeks.map((w) => `<th class="num">${w}주차</th>`).join("") + `<th class="num">변화</th></tr></thead><tbody>`;
+      weeks.map((w) => `<th class="num">${w ? w + "주차" : "기록"}</th>`).join("") + `<th class="num">변화</th></tr></thead><tbody>`;
     list.forEach((s, idx) => {
       const ws = Object.keys(s.byWeek).map(Number).sort((a, b) => a - b);
       const first = s.byWeek[ws[0]].score, last = s.byWeek[ws[ws.length - 1]].score;
@@ -225,7 +225,7 @@
   }
   $("btn-csv-pivot").addEventListener("click", () => {
     const { weeks, list } = pivot(filtered());
-    const out = [["분반", "학번", "이름", ...weeks.map((w) => w + "주차"), ...weeks.map((w) => w + "주차 틀린문항")]];
+    const out = [["분반", "학번", "이름", ...weeks.map((w) => (w ? w + "주차" : "기록")), ...weeks.map((w) => (w ? w + "주차" : "기록") + " 틀린문항")]];
     list.forEach((s) => out.push([
       s.section, s.student_id, s.name,
       ...weeks.map((w) => (s.byWeek[w] ? s.byWeek[w].score : "")),
