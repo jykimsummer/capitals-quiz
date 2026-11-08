@@ -24,19 +24,16 @@
       </div>
       <div class="field" id="subject-pick">
         <label>무엇을 풀까요?</label>
-        <div class="seg-head">암기 퀴즈</div>
         <div class="seg" id="subject-seg">
           <label class="seg-item"><input type="radio" name="subject" value="capital"><span>세계수도송</span></label>
           <label class="seg-item"><input type="radio" name="subject" value="theory"><span>수업이론</span></label>
         </div>
-        <div class="seg-head">자가진단</div>
         <div class="seg seg-3" id="subject-seg-2">
           <label class="seg-item"><input type="radio" name="subject" value="motivation"><span>학습동기 유형<small>20문항 · 진단</small></span></label>
           <label class="seg-item"><input type="radio" name="subject" value="style"><span>학습스타일<small>12문항 · 진단</small></span></label>
           <label class="seg-item"><input type="radio" name="subject" value="mindset"><span>마인드셋<small>12문항 · 진단</small></span></label>
         </div>
-        <div class="seg-head">활동</div>
-        <div class="seg" id="subject-seg-3" style="grid-template-columns:1fr">
+        <div class="seg" id="subject-seg-3" style="grid-template-columns:1fr;margin-top:8px">
           <label class="seg-item"><input type="radio" name="subject" value="country"><span>🌍 가고 싶은 나라 찾기<small>15문항 · 나에게 맞는 나라 4곳</small></span></label>
         </div>
         <div class="seg" id="subject-seg-4" style="margin-top:8px">
@@ -990,7 +987,7 @@
   let OKEY = null, OSET = null, OLAY = "slots";
   let odSel = null;
   let odDrag = null, odGhost = null, odMoved = false, odPh = null;
-  let odSX = 0, odSY = 0, odOX = 0, odOY = 0, odW = 0, odJust = false;
+  let odSX = 0, odSY = 0, odLX = 0, odLY = 0, odOX = 0, odOY = 0, odW = 0, odJust = false;
 
   const odIsSlots = () => OLAY === "slots";
   const odIsPick = () => OLAY === "pick";
@@ -1198,12 +1195,19 @@
     const item = e.target.closest(".od-item");
     if (!item || e.target.closest(".od-nudge")) return;
     // 폰에서는 손잡이에서만 끌기 시작 (그래야 화면 스크롤이 막히지 않는다)
-    if (!e.target.closest(".od-grip") && e.pointerType !== "mouse") return;
+    const grip = e.target.closest(".od-grip");
+    if (!grip && e.pointerType !== "mouse") return;
     if (e.pointerType === "mouse" && e.button !== 0) return;
     odDrag = item; odMoved = false;
-    odSX = e.clientX; odSY = e.clientY;
+    odSX = odLX = e.clientX; odSY = odLY = e.clientY;
     const r = item.getBoundingClientRect();
     odOX = e.clientX - r.left; odOY = e.clientY - r.top; odW = r.width;
+    if (!grip) return;
+    // 손잡이를 잡는 순간 바로 들어올린다. 손가락을 조금만 움직여도 상자가 따라온다
+    // (여기서 preventDefault 를 부르면 톡 눌러 넣기가 막히므로 touch-action 에 맡긴다)
+    // 손가락이 상자 밖으로 나가도 끝까지 이 손가락을 따라가게 붙잡아 둔다
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch (ex) {}
+    odLift();
   }
 
   // 끄는 동안 번호를 실시간으로 다시 매긴다 (점선 칸이 그 자리를 차지한 것으로 센다)
@@ -1221,15 +1225,16 @@
     });
   }
 
-  function odPtrMove(e) {
-    if (!odDrag) return;
-    if (!odMoved) {
-      if (Math.abs(e.clientX - odSX) + Math.abs(e.clientY - odSY) < 8) return;
-      odMoved = true;
+  // 상자를 손에 들린 상태로 만든다
+  function odLift() {
+    if (odGhost || !odDrag) return;
+    {
       const r = odDrag.getBoundingClientRect();
       odGhost = odDrag.cloneNode(true);
       odGhost.className = "od-item ghost";
       odGhost.style.width = odW + "px";
+      odGhost.style.left = (odLX - odOX) + "px";
+      odGhost.style.top = (odLY - odOY) + "px";
       document.body.appendChild(odGhost);
       odSelect(null);
       if (odIsSlots()) {
@@ -1247,6 +1252,17 @@
         odRenumberLive();
       }
     }
+  }
+
+  function odPtrMove(e) {
+    if (!odDrag) return;
+    odLX = e.clientX; odLY = e.clientY;
+    // 마우스는 조금 움직여야 끌기로 본다 (손잡이를 잡은 손가락은 이미 들려 있다)
+    if (!odGhost) {
+      if (Math.abs(e.clientX - odSX) + Math.abs(e.clientY - odSY) < 8) return;
+      odLift();
+    }
+    if (!odMoved && Math.abs(e.clientX - odSX) + Math.abs(e.clientY - odSY) >= 5) odMoved = true;
     e.preventDefault();
     odGhost.style.left = (e.clientX - odOX) + "px";
     odGhost.style.top = (e.clientY - odOY) + "px";
@@ -1276,10 +1292,12 @@
   function odPtrUp(e) {
     if (!odDrag) return;
     const item = odDrag; odDrag = null;
+    const x = typeof e.clientX === "number" ? e.clientX : odLX;
+    const y = typeof e.clientY === "number" ? e.clientY : odLY;
     // 중간 이동 신호 없이 멀리서 손을 뗀 경우(빠른 플릭)도 끌기로 본다
-    const far = Math.abs(e.clientX - odSX) + Math.abs(e.clientY - odSY) >= 8;
-    if (!odMoved && !far) { odCleanDrag(item); return; }
-    const t = odUnder(e.clientX, e.clientY);
+    const far = Math.abs(x - odSX) + Math.abs(y - odSY) >= 6;
+    if (!odMoved && !far) { odCleanDrag(item); return; }   // 톡 누른 것 → 눌러서 넣기로 넘긴다
+    const t = odUnder(x, y);
     odJust = true;
     setTimeout(() => { odJust = false; }, 80);
     if (odPh) {                       // 점선 칸이 있던 자리에 그대로 넣는다
@@ -1293,13 +1311,13 @@
     if (!t) return;
     if (odIsSlots()) { odArm(null); odPlace(item, t); }
     else if (OSET.big) odSwap(item, t);
-    else odInsert(item, t, e.clientY);
+    else odInsert(item, t, y);
   }
 
   ["od-slots", "od-pool", "od-list"].forEach((id) => $(id).addEventListener("pointerdown", odPtrDown));
   window.addEventListener("pointermove", odPtrMove, { passive: false });
   window.addEventListener("pointerup", odPtrUp);
-  window.addEventListener("pointercancel", odPtrUp);
+  window.addEventListener("pointercancel", () => odPtrUp({ clientX: odLX, clientY: odLY }));
 
   // --- 톡 눌러 옮기기 ---
   function odClick(e) {
